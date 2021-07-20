@@ -1,4 +1,5 @@
 import collections
+
 import argparse
 import json
 from passage_chunker import SpacyPassageChunker
@@ -32,7 +33,7 @@ def load_queries(path):
 
     return queries_dict
 
-def load_corpus(path, doc_level):
+def load_corpus(path):
 
     corpus_type = path.rsplit(".", 1)[-1]
     collection_dict = {}
@@ -81,13 +82,15 @@ def load_run(path):
     print('Loading run...{}'.format(i))
     return sorted_run
 
-def normalized(strings):
+def normalized(strings_title, strings):
+    if strings_title != "No Title":
+        strings = strings_title + " " + strings 
     strings = re.sub(r"\n", " ", strings)
     strings = re.sub(r"\s{2, }", " ", strings)
     return string.strip()
 
 # Load requirements (corpus, queries, runs)
-collections, titles = load_corpus(path=args.corpus, doc_level=args.doc_level)
+corpus, titles = load_corpus(path=args.corpus)
 queries = load_queries(path=args.queries)
 runs = load_run(path=args.run)
 passageChunker = SpacyPassageChunker()
@@ -95,15 +98,25 @@ passageChunker = SpacyPassageChunker()
 with open(args.output_text_pair, 'w') as text_pair, open(args.output_id_pair, 'w') as id_pair:
     for rank, (qid, docids) in enumerate(runs.items()):
         for docid in docids:
-            passageChunker.sentence_tokenization(collections[docid])
-            passages = passageChunker.create_passages()
+            # Document to passage (by passage chuncker)
+            if args.doc_level:
+                passageChunker.sentence_tokenization(corpus[docid])
+                passages = passageChunker.create_passages()
 
-            for n_paragraph, passage in passages:
+                for n_paragraph, passage in passages:
+                    text_example = "Query: {} Document: {} Relevant: ".format(
+                            queries[qid], normalized(titles[docid], passage["body"]))
+                    id_example = "{}\t{}-{}\t{}\n".format(qid, docid, passage["id"], rank+0.001*n_paragraph)
+                    text_pair.write(text_example)
+                    id_pair.write(id_example)
+            else:
                 text_example = "Query: {} Document: {} Relevant: ".format(
-                        queries[qid], normalized(titles[docid], passage["body"]))
-                id_example = "{}\t{}-{}\t{}\n".format(qid, docid, passage["id"], rank+0.001*n_paragraph)
+                        queries[qid], normalized(titles[docid], corpus[docid]))
+                id_example = "{}\t{}\t{}\n".format(qid, docid, rank+1)
                 text_pair.write(text_example)
                 id_pair.write(id_example)
+                
+
         
         if i % 10000 == 0:
                 print('Creating T5-qp-ranking-pairs...{}'.format(i))
