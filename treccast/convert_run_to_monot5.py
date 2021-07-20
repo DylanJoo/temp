@@ -1,7 +1,7 @@
-import collections
+import collection
 import argparse
 import json
-import passage_chunker import SpacyPassageChunker
+from passage_chunker import SpacyPassageChunker
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--queries", type=str, required=True,
@@ -98,10 +98,10 @@ with open(args.output_text_pair, 'w') as text_pair, open(args.output_id_pair, 'w
             passageChunker.sentence_tokenization(collections[docid])
             passages = passageChunker.create_passages()
 
-            for passage in passages:
+            for n_paragraph, passage in passages:
                 text_example = "Query: {} Document: {} Relevant: ".format(
                         queries[qid], normalized(titles[docid], passage["body"]))
-                id_example = "{}\t{}-{}\n".format(qid, docid, passage["id"])
+                id_example = "{}\t{}-{}\t{}\n".format(qid, docid, passage["id"], rank+0.001*n_paragraph)
                 text_pair.write(text_example)
                 id_pair.write(id_example)
         
