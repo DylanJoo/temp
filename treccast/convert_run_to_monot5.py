@@ -1,4 +1,4 @@
-import collection
+import collections
 import argparse
 import json
 from passage_chunker import SpacyPassageChunker
