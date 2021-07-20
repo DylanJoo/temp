@@ -87,7 +87,7 @@ def normalized(strings):
     return string.strip()
 
 # Load requirements (corpus, queries, runs)
-collections, titles = load_collection(path=args.corpus)
+collections, titles = load_corpus(path=args.corpus)
 queries = load_queries(path=args.queries)
 runs = load_run(path=args.run)
 passageChunker = SpacyPassageChunker()
