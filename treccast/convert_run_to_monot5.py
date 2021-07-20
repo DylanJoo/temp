@@ -39,7 +39,7 @@ def load_corpus(path):
     collection_dict = {}
     title_dict = {}
 
-    if corpus_type == "json":
+    if corpus_type == "trecweb":
         with open(path, 'r') as f:
             for i, line in enumerate(f):
                 doc_dict = json.loads(line)
@@ -74,7 +74,7 @@ def load_run(path):
 
     print('Sorting candidate docs by rank...')
     sorted_run = collections.OrderedDict()
-    for i, qid, doc_ids_ranks in enumerate(run.items()):
+    for i, (qid, doc_ids_ranks) in enumerate(run.items()):
         sorted(doc_ids_ranks, key=lambda x: x[1])
         docids = [docid for docid, _ in doc_ids_ranks]
         sorted_run[qid] = docids
@@ -87,7 +87,7 @@ def normalized(strings_title, strings):
         strings = strings_title + " " + strings 
     strings = re.sub(r"\n", " ", strings)
     strings = re.sub(r"\s{2, }", " ", strings)
-    return string.strip()
+    return strings.strip()
 
 # Load requirements (corpus, queries, runs)
 corpus, titles = load_corpus(path=args.corpus)
