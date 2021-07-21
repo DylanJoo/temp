@@ -125,7 +125,6 @@ with open(args.output_text_pair, 'w') as text_pair, open(args.output_id_pair, 'w
             if args.doc_level:
 
                 for passage in corpus[docid]:
-                    print(passage["id"])
                     text_example = "Query: {} Document: {} Relevant:\n".format(
                             queries[qid], normalized(titles[docid], passage["body"]))
                     id_example = "{}\t{}-{}\t{}\n".format(qid, docid, passage["id"], (i+1)+0.001*passage["id"])
@@ -141,7 +140,7 @@ with open(args.output_text_pair, 'w') as text_pair, open(args.output_id_pair, 'w
                 n_passage += 1
                 
         
-        if i % 1000 == 0:
+        if i % 100 == 0:
             print('Loading queries ...{}'.format(i))
             print('Creating T5-qp-ranking-pairs...{}'.format(n_passage))
 
