@@ -99,6 +99,8 @@ def load_run(path, topk):
         sorted_run[qid] = docids
 
     print('Loading run...{}'.format(i))
+    print("================\nOverlapped Document in this run under top-{}: {}\n================".format(
+        topk, len(candidate_docs))
     return sorted_run, candidate_docs
 
 def normalized(strings_title, strings):
