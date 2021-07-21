@@ -59,7 +59,7 @@ def load_corpus(path, doc_level, candidates):
                     collection_dict[docid] = passages
                     title_dict[docid] = doctitle
                     # Remove the docuemnt in candidate list
-                    candidates = candidates.remove(docid)
+                    candidates.remove(docid)
 
                 if i % 10000 == 0:
                     print('Loading collections...{}'.format(i))
@@ -77,7 +77,7 @@ def load_corpus(path, doc_level, candidates):
                     collection_dict[docid] = doctext
 
                     # Remove the docuemnt in candidate list
-                    candidates = candidates.remove(docid)
+                    candidates.remove(docid)
 
                 if i % 10000 == 0:
                     print('Loading collections...{}'.format(i))
@@ -109,7 +109,7 @@ def load_run(path, topk):
 
     print('Loading run...{}'.format(i))
     print("================\nOverlapped Document in this run under top-{}: {}\n================".format(
-        topk, len(candidate_docs))
+        topk, len(candidate_docs)))
     return sorted_run, candidate_docs
 
 def normalized(strings_title, strings):
