@@ -56,6 +56,8 @@ def baseline_run_check(path):
             line = "{} Q0 {} {} {} {}\n".format(qid, doc_passage_id, rank, score, name)
             run_baseline_corrected.write(line)
 
-dev_check(args.official_dev_json, args.pnr)
-baseline_run_check(args.official_dev_run)
+if args.official_dev_json:
+    dev_check(args.official_dev_json, args.passage_number_removal)
+if args.official_dev_run:
+    baseline_run_check(args.official_dev_run)
 print("DONE")
