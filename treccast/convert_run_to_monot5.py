@@ -36,22 +36,30 @@ def load_queries(path):
 def load_corpus(path, candidates):
 
     corpus_type = path.rsplit(".", 1)[-1]
-    collection_dict = {}
+    collection_dict = collections.default(list) 
     title_dict = {}
+
+    for n_paragraph, passage in passages:
+        text_example = "Query: {} Document: {} Relevant: ".format(
+                queries[qid], normalized(titles[docid], passage["body"]))
+        id_example = "{}\t{}-{}\t{}\n".format(qid, docid, passage["id"], rank+0.001*n_paragraph)
 
     if corpus_type == "trecweb":
         with open(path, 'r') as f:
             for i, line in enumerate(f):
                 doc_dict = json.loads(line)
                 docid, doctext, doctitle = doc_dict["id"], doc_dict["contents"], doc_dict["title"]
-
+                
                 if docid in candidates:
-                    collection_dict[docid] = doctext
+                    # Passage chunker
+                    passageChunker.sentence_tokenization(doctext)
+                    passages = passageChunker.create_passages()
+                    
+                    collection_dict[docid] = passages
                     title_dict[docid] = doctitle
 
                 if i % 10000 == 0:
                     print('Loading collections...{}'.format(i))
-
 
     if corpus_type == "tsv":
         with open(path, 'r') as f:
@@ -108,19 +116,16 @@ passageChunker = SpacyPassageChunker()
 with open(args.output_text_pair, 'w') as text_pair, open(args.output_id_pair, 'w') as id_pair:
     for rank, (qid, docids) in enumerate(runs.items()):
         for docid in docids:
-            # Document to passage (by passage chuncker)
             if args.doc_level:
-                passageChunker.sentence_tokenization(corpus[docid])
-                passages = passageChunker.create_passages()
 
-                for n_paragraph, passage in passages:
-                    text_example = "Query: {} Document: {} Relevant: ".format(
+                for passage in corpus[docid]:
+                    text_example = "Query: {} Document: {} Relevant:".format(
                             queries[qid], normalized(titles[docid], passage["body"]))
-                    id_example = "{}\t{}-{}\t{}\n".format(qid, docid, passage["id"], rank+0.001*n_paragraph)
+                    id_example = "{}\t{}-{}\t{}\n".format(qid, docid, passage["id"], rank+0.001*passage["id"])
                     text_pair.write(text_example)
                     id_pair.write(id_example)
             else:
-                text_example = "Query: {} Document: {} Relevant: ".format(
+                text_example = "Query: {} Document: {} Relevant:".format(
                         queries[qid], normalized(titles[docid], corpus[docid]))
                 id_example = "{}\t{}\t{}\n".format(qid, docid, rank+1)
                 text_pair.write(text_example)
