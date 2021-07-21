@@ -61,12 +61,11 @@ def load_corpus(path, candidates):
     if corpus_type == "tsv":
         with open(path, 'r') as f:
             for i, line in enumerate(f):
-                docid, doctext = line.rstrip().split('\t')
+                docid, doctext = line.strip().split('\t')
                 collection_dict[docid] = doctext
             
                 if docid in candidates:
                     collection_dict[docid] = doctext
-                    title_dict[docid] = doctitle
 
                 if i % 10000 == 0:
                     print('Loading collections...{}'.format(i))
