@@ -1,5 +1,4 @@
 import collections
-
 import argparse
 import json
 from passage_chunker import SpacyPassageChunker
@@ -35,7 +34,7 @@ def load_queries(path):
 
     return queries_dict
 
-def load_corpus(path, candidates):
+def load_corpus(path, doc_level, candidates):
 
     corpus_type = path.rsplit(".", 1)[-1]
     collection_dict = collections.default(list) 
@@ -48,9 +47,13 @@ def load_corpus(path, candidates):
                 docid, doctext, doctitle = doc_dict["id"], doc_dict["contents"], doc_dict["title"]
                 
                 if docid in candidates:
-                    # Passage chunker
-                    passageChunker.sentence_tokenization(doctext)
-                    passages = passageChunker.create_passages()
+                    if doc_level:
+                        # Document to passage, usong PassageChunker
+                        passageChunker.sentence_tokenization(doctext)
+                        passages = passageChunker.create_passages()
+                    else:
+                        # Passage
+                        passages = doctext
                     
                     collection_dict[docid] = passages
                     title_dict[docid] = doctitle
@@ -58,12 +61,13 @@ def load_corpus(path, candidates):
                 if i % 10000 == 0:
                     print('Loading collections...{}'.format(i))
 
+    # Passage only (document is not yet supported.)
     if corpus_type == "tsv":
         with open(path, 'r') as f:
             for i, line in enumerate(f):
                 docid, doctext = line.strip().split('\t')
                 collection_dict[docid] = doctext
-            
+
                 if docid in candidates:
                     collection_dict[docid] = doctext
 
@@ -103,11 +107,12 @@ def normalized(strings_title, strings):
     return strings.strip()
 
 # Load requirements (corpus, queries, runs)
-runs, candidate_docs= load_run(path=args.run)
-# Load only the collection that within the run file
-corpus, titles = load_corpus(path=args.corpus, candidates=candidate_docs)
+runs, candidate_docs = load_run(path=args.run)
 queries = load_queries(path=args.queries)
+
+# Load only the collection that within the run file and chunk.
 passageChunker = SpacyPassageChunker()
+corpus, titles = load_corpus(path=args.corpus, candidates=candidate_docs)
 n_passage = 0
 
 with open(args.output_text_pair, 'w') as text_pair, open(args.output_id_pair, 'w') as id_pair:
@@ -119,14 +124,14 @@ with open(args.output_text_pair, 'w') as text_pair, open(args.output_id_pair, 'w
                 if args.doc_level:
 
                     for passage in corpus[docid]:
-                        text_example = "Query: {} Document: {} Relevant:".format(
+                        text_example = "Query: {} Document: {} Relevant:\n".format(
                                 queries[qid], normalized(titles[docid], passage["body"]))
-                        id_example = "{}\t{}-{}\t{}\n".format(qid, docid, passage["id"], rank+0.001*passage["id"])
+                        id_example = "{}\t{}-{}\t{}\n".format(qid, docid, passage["id"], (i+1)+0.001*passage["id"])
                         text_pair.write(text_example)
                         id_pair.write(id_example)
                         n_passage += 1
                 else:
-                    text_example = "Query: {} Document: {} Relevant:".format(
+                    text_example = "Query: {} Document: {} Relevant:\n".format(
                             queries[qid], normalized(titles[docid], corpus[docid]))
                     id_example = "{}\t{}\t{}\n".format(qid, docid, rank+1)
                     text_pair.write(text_example)
