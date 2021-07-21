@@ -30,11 +30,9 @@ def dev_check(path, pnr):
             qid = str(topicid) + "_" + str(turnid)
 
             dev_corrected.write("{} {} {} {}\n".format(qid, 0, doc_passage_id, 1))
-            dev_corrected.write("{}\t{}\n".format(qid, docid))
             # doc only
             if pnr:
                 dev_corrected_doc.write("{} {} {} {}\n".format(qid, 0, docid, 1))
-                dev_corrected_doc.write("{}\t{}\n".format(qid, docid))
 
 def baseline_run_check(path):
     run_baseline = open(path, 'r')
