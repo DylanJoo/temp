@@ -13,6 +13,8 @@ parser.add_argument("--corpus", type=str, required=True,
                     help="json/tsv file with <doc_id> and <doc_text> or <passage_id> and <passage_text>")
 parser.add_argument("-d", "--doc_level", action="store_false", default=False,  
                     help="Document level identifier, segmented the docuemnt if needed.")
+parser.add_argument("-k", "--top_k", type=int, default=1000,
+                    help="Selectd top k candidate documents/passages to create the pair.")
 parser.add_argument("--output_text_pair", type=str, required=True,
                     help="path to the query-(candidate) passage pair with monot5 format.")
 parser.add_argument("--output_id_pair", type=str, required=True,
@@ -38,11 +40,6 @@ def load_corpus(path, candidates):
     corpus_type = path.rsplit(".", 1)[-1]
     collection_dict = collections.default(list) 
     title_dict = {}
-
-    for n_paragraph, passage in passages:
-        text_example = "Query: {} Document: {} Relevant: ".format(
-                queries[qid], normalized(titles[docid], passage["body"]))
-        id_example = "{}\t{}-{}\t{}\n".format(qid, docid, passage["id"], rank+0.001*n_paragraph)
 
     if corpus_type == "trecweb":
         with open(path, 'r') as f:
@@ -112,28 +109,34 @@ runs, candidate_docs= load_run(path=args.run)
 corpus, titles = load_corpus(path=args.corpus, candidates=candidate_docs)
 queries = load_queries(path=args.queries)
 passageChunker = SpacyPassageChunker()
+n_passage = 0
 
 with open(args.output_text_pair, 'w') as text_pair, open(args.output_id_pair, 'w') as id_pair:
-    for rank, (qid, docids) in enumerate(runs.items()):
-        for docid in docids:
-            if args.doc_level:
+    for i, (qid, docids) in enumerate(runs.items()):
+        # Only create for tok_k candidates
+        if i < args.top_k:
 
-                for passage in corpus[docid]:
+            for docid in docids:
+                if args.doc_level:
+
+                    for passage in corpus[docid]:
+                        text_example = "Query: {} Document: {} Relevant:".format(
+                                queries[qid], normalized(titles[docid], passage["body"]))
+                        id_example = "{}\t{}-{}\t{}\n".format(qid, docid, passage["id"], rank+0.001*passage["id"])
+                        text_pair.write(text_example)
+                        id_pair.write(id_example)
+                        n_passage += 1
+                else:
                     text_example = "Query: {} Document: {} Relevant:".format(
-                            queries[qid], normalized(titles[docid], passage["body"]))
-                    id_example = "{}\t{}-{}\t{}\n".format(qid, docid, passage["id"], rank+0.001*passage["id"])
+                            queries[qid], normalized(titles[docid], corpus[docid]))
+                    id_example = "{}\t{}\t{}\n".format(qid, docid, rank+1)
                     text_pair.write(text_example)
                     id_pair.write(id_example)
-            else:
-                text_example = "Query: {} Document: {} Relevant:".format(
-                        queries[qid], normalized(titles[docid], corpus[docid]))
-                id_example = "{}\t{}\t{}\n".format(qid, docid, rank+1)
-                text_pair.write(text_example)
-                id_pair.write(id_example)
+                    n_passage += 1
                 
-
         
-        if i % 10000 == 0:
-                print('Creating T5-qp-ranking-pairs...{}'.format(i))
+        if i % 1000 == 0:
+            print('Loading queries ...{}'.format(i))
+            print('Creating T5-qp-ranking-pairs...{}'.format(n_passage))
 
 print("DONE!")
