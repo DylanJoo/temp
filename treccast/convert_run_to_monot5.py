@@ -30,7 +30,7 @@ def load_queries(path):
             qid, query = line.rstrip().split('\t')
             queries_dict[qid] = query
         
-            if i % 1000 == 0:
+            if i % 10000 == 0:
                 print('Loading queries...{}'.format(i))
 
     return queries_dict
