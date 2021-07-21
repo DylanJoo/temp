@@ -13,7 +13,7 @@ args = parser.parse_args()
 
 def dev_check(path, trec):
     dev_json = json.load(open(path, 'r'))
-    dev_tsv_corrected = open(path + "_corrected", 'w')
+    dev_tsv_corrected = open(path + "_corrected.trec", 'w')
     for topic in dev_json:
         topicid = topic['number']
         for i, turn in enumerate(topic['turn']):
