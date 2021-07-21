@@ -58,9 +58,13 @@ def load_corpus(path, doc_level, candidates):
                     
                     collection_dict[docid] = passages
                     title_dict[docid] = doctitle
+                    # Remove the docuemnt in candidate list
+                    candidates = candidates.remove(docid)
 
                 if i % 10000 == 0:
                     print('Loading collections...{}'.format(i))
+                if len(candidates) == 0:
+                    break
 
     # Passage only (document is not yet supported.)
     if corpus_type == "tsv":
@@ -72,8 +76,13 @@ def load_corpus(path, doc_level, candidates):
                 if docid in candidates:
                     collection_dict[docid] = doctext
 
+                    # Remove the docuemnt in candidate list
+                    candidates = candidates.remove(docid)
+
                 if i % 10000 == 0:
                     print('Loading collections...{}'.format(i))
+                if len(candidates) == 0:
+                    break
 
     return collection_dict, title_dict
 
