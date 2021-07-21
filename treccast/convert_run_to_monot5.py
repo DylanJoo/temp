@@ -33,7 +33,7 @@ def load_queries(path):
 
     return queries_dict
 
-def load_corpus(path):
+def load_corpus(path, candidates):
 
     corpus_type = path.rsplit(".", 1)[-1]
     collection_dict = {}
@@ -44,8 +44,10 @@ def load_corpus(path):
             for i, line in enumerate(f):
                 doc_dict = json.loads(line)
                 docid, doctext, doctitle = doc_dict["id"], doc_dict["contents"], doc_dict["title"]
-                collection_dict[docid] = doctext
-                title_dict[docid] = doctitle
+
+                if docid in candidates:
+                    collection_dict[docid] = doctext
+                    title_dict[docid] = doctitle
 
                 if i % 10000 == 0:
                     print('Loading collections...{}'.format(i))
@@ -57,6 +59,10 @@ def load_corpus(path):
                 docid, doctext = line.rstrip().split('\t')
                 collection_dict[docid] = doctext
             
+                if docid in candidates:
+                    collection_dict[docid] = doctext
+                    title_dict[docid] = doctitle
+
                 if i % 10000 == 0:
                     print('Loading collections...{}'.format(i))
 
@@ -64,10 +70,13 @@ def load_corpus(path):
 
 def load_run(path):
     
+    candidate_docs = set()
     run = collections.OrderedDict()
     with open(path) as f:
         for i, line in enumerate(f):
             qid, docid, rank = line.split('\t')
+            # log the candidate docs 
+            candidate_docs.add(docid)
             if qid not in run:
                 run[qid] = []
             run[qid].append((docid, int(rank)))
@@ -80,7 +89,7 @@ def load_run(path):
         sorted_run[qid] = docids
 
     print('Loading run...{}'.format(i))
-    return sorted_run
+    return sorted_run, candidate_docs
 
 def normalized(strings_title, strings):
     if strings_title != "No Title":
@@ -90,9 +99,10 @@ def normalized(strings_title, strings):
     return strings.strip()
 
 # Load requirements (corpus, queries, runs)
-corpus, titles = load_corpus(path=args.corpus)
+runs, candidate_docs= load_run(path=args.run)
+# Load only the collection that within the run file
+corpus, titles = load_corpus(path=args.corpus, candidates=candidate_docs)
 queries = load_queries(path=args.queries)
-runs = load_run(path=args.run)
 passageChunker = SpacyPassageChunker()
 
 with open(args.output_text_pair, 'w') as text_pair, open(args.output_id_pair, 'w') as id_pair:
