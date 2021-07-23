@@ -5,7 +5,7 @@ import json
 parser = argparse.ArgumentParser()
 parser.add_argument("-odj", "--official_dev_json", type=str)
 parser.add_argument("-odr", "--official_dev_run", type=str)
-parser.add_argument("-pnr", "--passage_number_removal", action="store_true", default=True)
+parser.add_argument("-pnr", "--passage_number_removal", action="store_true", default=False)
 parser.add_argument("--trec", action="store_true", default=True)
 args = parser.parse_args()
 
