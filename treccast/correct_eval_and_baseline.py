@@ -3,8 +3,8 @@ import argparse
 import json
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--official_dev_json", type=str)
-parser.add_argument("--official_dev_run", type=str)
+parser.add_argument("-odj", "--official_dev_json", type=str)
+parser.add_argument("-odr", "--official_dev_run", type=str)
 parser.add_argument("-pnr", "--passage_number_removal", action="store_true", default=True)
 parser.add_argument("--trec", action="store_true", default=True)
 args = parser.parse_args()
@@ -14,9 +14,9 @@ args = parser.parse_args()
 
 def dev_check(path, pnr):
     dev_json = json.load(open(path, 'r'))
-    dev_corrected = open(path + "_corrected.trec", 'w')
+    dev_corrected = open(path + "_corrected.tsv", 'w')
     if pnr:
-        dev_corrected_doc = open(path + "_doc_corrected.trec", 'w')
+        dev_corrected_doc = open(path + "_doc_corrected.tsv", 'w')
     for topic in dev_json:
         topicid = topic['number']
         for i, turn in enumerate(topic['turn']):
