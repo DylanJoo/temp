@@ -70,9 +70,8 @@ def merge(path_conv_qa, path_canard, path_output):
         quac_turn_id = "{}_q#{}".format(quac_id, dict_canard['Question_no'])
         
         qa = conv_qa[quac_turn_id]
-        answer = qa['answer']
         context = qa['context']
-        answers += [answer]
+        answers += [qa['answer']]
 
         # coreference resolution
         src_coref = combine_utterance_response(history[2:]+[question], answers)
