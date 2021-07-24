@@ -61,7 +61,7 @@ def merge(path_conv_qa, path_canard, path_output):
     conv_qa = json.load(open(path_conv_qa, 'r'))
     canard = json.load(open(path_canard, 'r'))
     output = open(path_output, 'w')
-    answer = list()
+    answers = list()
 
     for dict_canard in canard:
         history = dict_canard['History']
