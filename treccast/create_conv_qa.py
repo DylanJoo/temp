@@ -65,6 +65,7 @@ def merge(path_conv_qa, path_canard, path_output):
 
     for dict_canard in canard:
         history = dict_canard['History']
+        question = dict_canard['Question']
         rewrite = dict_canard['Rewrite']
         quac_id = dict_canard['QuAC_dialog_id']
         quac_turn_id = "{}_q#{}".format(quac_id, dict_canard['Question_no'])
