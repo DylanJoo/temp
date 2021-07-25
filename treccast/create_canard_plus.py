@@ -18,7 +18,7 @@ def convert_quac_to_conv_qa(args):
     data = open(args.path_quac_train, 'r')
     quac = json.load(data)['data']
     data = open(args.path_quac_val, 'r')
-    quac = json.load(data)['data']
+    quac = quac + json.load(data)['data']
 
     conversational_qa = open(args.path_conv_qa, 'w')
     conv_qa_dict = collections.defaultdict()
@@ -71,14 +71,15 @@ def merge(args):
         question = dict_canard['Question']
         rewrite = dict_canard['Rewrite']
         quac_id = dict_canard['QuAC_dialog_id']
-        quac_turn_id = "{}_q#{}".format(quac_id, dict_canard['Question_no'])
+        turn_id = int(dict_canard['Question_no']) - 1
+        quac_turn_id = "{}_q#{}".format(quac_id, turn_id)
         
         qa = conv_qa[quac_turn_id]
         context = qa['context']
         answers += [qa['answer']]
 
         # coreference resolution
-        src_coref = combine_utterance_response(history[2:]+[question], answers)
+        src_coref = combine_utterance_response(history[2:]+[question], answers, turn_id)
         tgt_coref = rewrite
         if args.spacy:
             src_coref = ' '.join([tok.text for tok in nlp(src_coref)])
