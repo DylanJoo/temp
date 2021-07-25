@@ -73,11 +73,12 @@ def merge(args):
     quac_id = ""
 
     for dict_canard in canard:
-        history = dict_canard['History']
-        question = dict_canard['Question']
-        rewrite = dict_canard['Rewrite']
         if dict_canard['QuAC_dialog_id'] != quac_id:
             new_topic = True
+        # Although the history is already containt the Q and A
+        #history = dict_canard['History']
+        question = dict_canard['Question']
+        rewrite = dict_canard['Rewrite']
         quac_id = dict_canard['QuAC_dialog_id']
         turn_id = int(dict_canard['Question_no']) - 1
         quac_turn_id = "{}_q#{}".format(quac_id, turn_id)
@@ -85,12 +86,15 @@ def merge(args):
         # If new topic, clean the answers list, and new another answer list
         if new_topic:
             answers = list()
+            questions = list()
+            new_topic = False
         qa = conv_qa[quac_turn_id]
         context = qa['context']
+        questions += [question]
         answers += [qa['answer']]
 
         # coreference resolution
-        src_coref = combine_utterance_response(history[2:]+[question], answers, turn_id)
+        src_coref = combine_utterance_response(questions, answers, turn_id)
         tgt_coref = rewrite
         if args.spacy:
             src_coref = ' '.join([tok.text for tok in nlp(src_coref)])
