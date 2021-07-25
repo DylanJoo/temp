@@ -70,7 +70,7 @@ def merge(args):
     conv_qa = json.load(open(args.path_conv_qa, 'r'))
     canard = json.load(open(args.path_canard, 'r'))
     output = open(args.path_output, 'w')
-    answers = list()
+    quac_id = ""
 
     for dict_canard in canard:
         history = dict_canard['History']
