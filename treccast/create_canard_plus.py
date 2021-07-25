@@ -6,10 +6,10 @@ import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-canard", "--path_canard", default="train_canard.json", type=str)
-parser.add_argument("-quac-tr", "--path_quac_train", default="train_v2.0.json", type=str)
-parser.add_argument("-quac-va", "--path_quac_val", default="val_v2.0.json", type=str)
+parser.add_argument("-quac-tr", "--path_quac_train", default="train_quac.json", type=str)
+parser.add_argument("-quac-va", "--path_quac_val", default="val_quac.json", type=str)
 parser.add_argument("-conv_qa", "--path_conv_qa", default="train_convqa.json", type=str)
-parser.add_argument("-out", "--path_output", type=str)
+parser.add_argument("-out", "--path_output", default="train_canard+.json", type=str)
 parser.add_argument("--spacy", action="store_true", default=False)
 args = parser.parse_args()
 
