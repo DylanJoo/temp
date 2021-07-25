@@ -63,7 +63,7 @@ def merge(args):
 
     conv_qa = json.load(open(args.path_conv_qa, 'r'))
     canard = json.load(open(args.path_canard, 'r'))
-    output = open(path_output, 'w')
+    output = open(args.path_output, 'w')
     answers = list()
 
     for dict_canard in canard:
