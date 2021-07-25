@@ -38,8 +38,14 @@ def convert_quac_to_conv_qa(args):
             #answer = turn['answers'][0]
             # THe "Original" answert from the given context
             orig_answer = turn['orig_answer']['text']
-
-            conv_qa_dict[turn['id']] = {"context": context, "question": question, "answer": orig_answer}
+            
+            question_id = turn['id']
+            conversation_id, turn_id = question_id.split("_q#")
+            # Some turn index is wrong in QuAC
+            if turn_id != i_turn:
+                print("Mismatch found in {}, Corrected from q#{} to q#{}".format(conversation_id, turn_id, i_turn))
+                question_id = "{}_q#{}".format(conversation, i_turn) 
+            conv_qa_dict[question_id] = {"context": context, "question": question, "answer": orig_answer}
     
     json.dump(conv_qa_dict, conversational_qa) 
     print("{} have been converted...".format(args.path_conv_qa))
