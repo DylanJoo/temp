@@ -42,9 +42,9 @@ def convert_quac_to_conv_qa(args):
             question_id = turn['id']
             conversation_id, turn_id = question_id.split("_q#")
             # Some turn index is wrong in QuAC
-            if turn_id != i_turn:
+            if int(turn_id) != i_turn:
                 print("Mismatch found in {}, Corrected from q#{} to q#{}".format(conversation_id, turn_id, i_turn))
-                question_id = "{}_q#{}".format(conversation, i_turn) 
+                question_id = "{}_q#{}".format(conversation_id, i_turn) 
             conv_qa_dict[question_id] = {"context": context, "question": question, "answer": orig_answer}
     
     json.dump(conv_qa_dict, conversational_qa) 
@@ -76,10 +76,15 @@ def merge(args):
         history = dict_canard['History']
         question = dict_canard['Question']
         rewrite = dict_canard['Rewrite']
+        if dict_canard['QuAC_dialog_id'] != quac_id:
+            new_topic = True
         quac_id = dict_canard['QuAC_dialog_id']
         turn_id = int(dict_canard['Question_no']) - 1
         quac_turn_id = "{}_q#{}".format(quac_id, turn_id)
         
+        # If new topic, clean the answers list, and new another answer list
+        if new_topic:
+            answers = list()
         qa = conv_qa[quac_turn_id]
         context = qa['context']
         answers += [qa['answer']]
