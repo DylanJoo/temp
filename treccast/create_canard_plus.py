@@ -51,13 +51,14 @@ def convert_quac_to_conv_qa(args):
     print("{} have been converted...".format(args.path_conv_qa))
 
 # Case 1: Using the lag "answer " passage for exapnding context
-def combine_utterance_response(utterances, responses, current_i):
+def combine_utterance_response(utterances, responses, current_i=-100):
     '''Indicate the i-th turn would consist i-1, i-2, i-3'''
     output = list()
     for i, (u, r) in enumerate(zip(utterances[:-1], responses[:-1])):
         if i >= (current_i - 1):
-            output.append(u)
-            output.append(r)
+            #output.append(u)
+            #output.append(r)
+            output.append("{} : {}".format(u, r))
         else:
             output.append(u)
     output.append(utterances[-1])
