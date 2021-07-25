@@ -5,19 +5,22 @@ import os
 #from spacy.lang.en import English
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-canard", "--path_canard", type=str)
-parser.add_argument("-quac", "--path_quac", type=str)
-parser.add_argument("-conv_qa", "--path_conv_qa", type=str)
+parser.add_argument("-canard", "--path_canard", default="train_canard.json", type=str)
+parser.add_argument("-quac-tr", "--path_quac_train", default="train_v2.0.json", type=str)
+parser.add_argument("-quac-va", "--path_quac_val", default="val_v2.0.json", type=str)
+parser.add_argument("-conv_qa", "--path_conv_qa", default="train_convqa.json", type=str)
 parser.add_argument("-out", "--path_output", type=str)
 parser.add_argument("--spacy", action="store_true", default=False)
 args = parser.parse_args()
 
 
-def convert_quac_to_conv_qa(path_quac, path_conv_qa):
-    data = open(path_quac, 'r')
+def convert_quac_to_conv_qa(args):
+    data = open(args.path_quac_train, 'r')
+    quac = json.load(data)['data']
+    data = open(args.path_quac_val, 'r')
     quac = json.load(data)['data']
 
-    conversational_qa = open(path_conv_qa, 'w')
+    conversational_qa = open(args.path_conv_qa, 'w')
     conv_qa_dict = collections.defaultdict()
 
     for i_topic, topic in enumerate(quac):
@@ -39,7 +42,7 @@ def convert_quac_to_conv_qa(path_quac, path_conv_qa):
             conv_qa_dict[turn['id']] = {"context": context, "question": question, "answer": orig_answer}
     
     json.dump(conv_qa_dict, conversational_qa) 
-    print("{} have been converted...".format(path_conv_qa))
+    print("{} have been converted...".format(args.path_conv_qa))
 
 # Case 1: Using the lag "answer " passage for exapnding context
 def combine_utterance_response(utterances, responses, current_i):
@@ -56,10 +59,10 @@ def combine_utterance_response(utterances, responses, current_i):
     return " ||| ".join(output)
 
 # case 2: Using the lag "entities" of lag turn's answer for expanding context
-def merge(path_conv_qa, path_canard, path_output):
+def merge(args):
 
-    conv_qa = json.load(open(path_conv_qa, 'r'))
-    canard = json.load(open(path_canard, 'r'))
+    conv_qa = json.load(open(args.path_conv_qa, 'r'))
+    canard = json.load(open(args.path_canard, 'r'))
     output = open(path_output, 'w')
     answers = list()
 
@@ -88,6 +91,6 @@ def merge(path_conv_qa, path_canard, path_output):
 
 print(args)
 #if os.path.isfile(args.path_conv_qa) is False:
-convert_quac_to_conv_qa(args.path_quac, args.path_conv_qa)
-merge(args.path_conv_qa, args.path_canard, args.path_output)
+convert_quac_to_conv_qa(args)
+merge(args)
 print("DONE")
