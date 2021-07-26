@@ -109,6 +109,8 @@ def merge(args):
         #example_qa = "Response: {} Query: {} Rewrite:\n".format()
 
 print(args)
+if args.spacy:
+    nlp = English()
 #if os.path.isfile(args.path_conv_qa) is False:
 convert_quac_to_conv_qa(args)
 merge(args)
