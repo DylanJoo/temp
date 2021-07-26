@@ -61,8 +61,9 @@ def combine_utterance_response(utterances, responses, pre_history, current_i=-10
             output.append("{} : {}".format(u, r))
         else:
             output.append(u)
-        if pre_history:
-            output = pre_history + output
+    # If we need the pre-history like title or descprition.
+    if len(pre_history):
+        output = pre_history + output
     output.append(utterances[-1])
 
     return " ||| ".join(output)
