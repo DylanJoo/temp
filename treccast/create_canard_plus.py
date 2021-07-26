@@ -2,7 +2,7 @@ import json
 import argparse
 import collections
 import os
-#from spacy.lang.en import English
+from spacy.lang.en import English
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-canard", "--path_canard", default="train_canard.json", type=str)
@@ -51,7 +51,7 @@ def convert_quac_to_conv_qa(args):
     print("{} have been converted...".format(args.path_conv_qa))
 
 # Case 1: Using the lag "answer " passage for exapnding context
-def combine_utterance_response(utterances, responses, current_i=-100):
+def combine_utterance_response(utterances, responses, pre_history, current_i=-100):
     '''Indicate the i-th turn would consist i-1, i-2, i-3'''
     output = list()
     for i, (u, r) in enumerate(zip(utterances[:-1], responses[:-1])):
@@ -61,6 +61,8 @@ def combine_utterance_response(utterances, responses, current_i=-100):
             output.append("{} : {}".format(u, r))
         else:
             output.append(u)
+        if pre_history:
+            output = pre_history + output
     output.append(utterances[-1])
 
     return " ||| ".join(output)
@@ -77,7 +79,7 @@ def merge(args):
         if dict_canard['QuAC_dialog_id'] != quac_id:
             new_topic = True
         # Although the history is already containt the Q and A
-        #history = dict_canard['History']
+        history = dict_canard['History'][:2]
         question = dict_canard['Question']
         rewrite = dict_canard['Rewrite']
         quac_id = dict_canard['QuAC_dialog_id']
@@ -95,7 +97,7 @@ def merge(args):
         answers += [qa['answer']]
 
         # coreference resolution
-        src_coref = combine_utterance_response(questions, answers, turn_id)
+        src_coref = combine_utterance_response(questions, answers, pre_history, turn_id)
         tgt_coref = rewrite
         if args.spacy:
             src_coref = ' '.join([tok.text for tok in nlp(src_coref)])
