@@ -98,7 +98,7 @@ def merge(args):
         answers += [qa['answer']]
 
         # coreference resolution
-        src_coref = combine_utterance_response(questions, answers, history, turn_id)
+        src_coref = combine_utterance_response(questions, answers, history)
         tgt_coref = rewrite
         if args.spacy:
             src_coref = ' '.join([tok.text for tok in nlp(src_coref)])
