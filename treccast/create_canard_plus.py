@@ -50,7 +50,7 @@ def convert_quac_to_conv_qa(args):
     json.dump(conv_qa_dict, conversational_qa) 
     print("{} have been converted...".format(args.path_conv_qa))
 
-# Case 1: Using the lag "answer " passage for exapnding context
+# History 1: Using the lag "answer " passage for exapnding context
 def combine_utterance_response(utterances, responses, pre_history, current_i=-100):
     '''Indicate the i-th turn would consist i-1, i-2, i-3'''
     output = list()
@@ -64,11 +64,49 @@ def combine_utterance_response(utterances, responses, pre_history, current_i=-10
     # If we need the pre-history like title or descprition.
     if len(pre_history):
         output = pre_history + output
+
     output.append(utterances[-1])
+    output = " ||| ".join(output)
 
-    return " ||| ".join(output)
+    return output
 
-# case 2: Using the lag "entities" of lag turn's answer for expanding context
+# History 2: Using the lag "entities" of lag turn's answer for expanding context
+def combine_utterance_entity(utterances, responses, pre_history, current_i=-100):
+    '''Indicate the i-th turn would consist i-1, i-2, i-3, 
+    and also using spacy to extract the entites as response'''
+
+    output = list()
+    for i, (u, r) in enumerate(zip(utterances[:-1], responses[:-1])):
+        if i >= (current_i - 3):
+            # output.append(u)
+            # entities = [token.text for token in nlp(r)]
+            entities = [token for token in r.split() if token.lower() not in u.lower()]
+            # print(entities)
+            output.append(u + " | " + ", ".join(entities))
+        else:
+            output.append(u)
+    
+    # If we need the pre-history like title or descprition.
+    if len(pre_history):
+        output = pre_history + output
+
+    output.append(utterances[-1])
+    output = " ||| ".join(output)
+    # output =  " ".join([tok.text for tok in nlp(output)])
+    
+    return output
+
+# Rewrite 1
+def concat_response_tokens(rewrite_query, raw_query): 
+    '''Extract the additional token with information.
+    '''
+    rewrite_tokens = rewrite_query.lower().split()
+    raw_tokens = raw_query.lower().split()
+
+    output = [token for token in rewrite_tokens if token not in raw_tokens]
+
+    return rewrite_query + " | " + " ".join(output)
+
 def merge(args):
 
     conv_qa = json.load(open(args.path_conv_qa, 'r'))
@@ -99,7 +137,10 @@ def merge(args):
 
         # coreference resolution
         src_coref = combine_utterance_response(questions, answers, history)
+        #src_coref = combine_utterance_entity(questions, answers, history)
         tgt_coref = rewrite
+        tgt_coref = concat_response_tokens(rewrite, question)
+
         if args.spacy:
             src_coref = ' '.join([tok.text for tok in nlp(src_coref)])
             tgt_coref = ' '.join([tok.text for tok in nlp(tgt_coref)])
