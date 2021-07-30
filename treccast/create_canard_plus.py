@@ -118,7 +118,7 @@ def merge(args):
     output = open(args.path_output, 'w')
     quac_id = ""
 
-    for dict_canard in canard:
+    for i, dict_canard in enumerate(canard):
         if dict_canard['QuAC_dialog_id'] != quac_id:
             new_topic = True
         # Although the history is already containt the Q and A
@@ -152,6 +152,8 @@ def merge(args):
 
         output.write("{}\t{}\n".format(src_coref, tgt_coref))
 
+        if i % 1000 == 0:
+            print("{} record is finished...".format(i))
         # question answering
         #example_qa = "Response: {} Query: {} Rewrite:\n".format()
 
