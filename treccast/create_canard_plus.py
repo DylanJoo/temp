@@ -3,6 +3,7 @@ import argparse
 import collections
 import os
 from spacy.lang.en import English
+import spacy
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-canard", "--path_canard", default="train_canard.json", type=str)
@@ -11,7 +12,6 @@ parser.add_argument("-quac-va", "--path_quac_val", default="val_quac.json", type
 parser.add_argument("-conv_qa", "--path_conv_qa", default="train_convqa.json", type=str)
 parser.add_argument("-out", "--path_output", default="train_canard+.json", type=str)
 parser.add_argument("--spacy", action="store_true", default=False)
-parser.add_argument("--entites", action="store_true", default=False)
 parser.add_argument("--keywords", action="store_true", default=False)
 args = parser.parse_args()
 
@@ -73,30 +73,29 @@ def combine_utterance_response(utterances, responses, pre_history, current_i=-10
     return output
 
 # History 2: Using the lag "entities" of lag turn's answer for expanding context
-def combine_utterance_entity(utterances, responses, pre_history, current_i=-100):
-    '''Indicate the i-th turn would consist i-1, i-2, i-3, 
-    and also using spacy to extract the entites as response'''
-
-    output = list()
-    for i, (u, r) in enumerate(zip(utterances[:-1], responses[:-1])):
-        if i >= (current_i - 3):
-            # output.append(u)
-            # entities = [token.text for token in nlp(r)]
-            entities = [token for token in r.split() if token.lower() not in u.lower()]
-            # print(entities)
-            output.append(u + " | " + ", ".join(entities))
-        else:
-            output.append(u)
-    
-    # If we need the pre-history like title or descprition.
-    if len(pre_history):
-        output = pre_history + output
-
-    output.append(utterances[-1])
-    output = " ||| ".join(output)
-    # output =  " ".join([tok.text for tok in nlp(output)])
-    
-    return output
+# def combine_utterance_entity(utterances, responses, pre_history, current_i=-100):
+#     '''Indicate the i-th turn would consist i-1, i-2, i-3, 
+#     and also using spacy to extract the entites as response'''
+#
+#     output = list()
+#     for i, (u, r) in enumerate(zip(utterances[:-1], responses[:-1])):
+#         if i >= (current_i - 3):
+#             # output.append(u)
+#             # entities = [token.text for token in nlp(r)]
+#             entities = [token for token in r.split() if token.lower() not in u.lower()]
+#             # print(entities)
+#             output.append(u + " ||| " + " ".join(entities))
+#         else:
+#             output.append(u)
+#     
+#     # If we need the pre-history like title or descprition.
+#     if len(pre_history):
+#         output = pre_history + output
+#
+#     output.append(utterances[-1])
+#     output = " ||| ".join(output)
+#     
+#     return output
 
 # Rewrite 1
 def omission_tokens(rewrite_query, raw_query): 
@@ -105,8 +104,10 @@ def omission_tokens(rewrite_query, raw_query):
     rewrite_tokens = rewrite_query.lower().split()
     raw_tokens = raw_query.lower().split()
 
-    output = [token for token in rewrite_tokens if token not in raw_tokens]
-
+    diff_tokens = [token for token in rewrite_tokens if token not in raw_tokens]
+    output = pos(diff_tokens)
+    entities = [token.text for token in diff_tokens \
+            if (token.pos_ in ['NOUN', 'PROPN'])]
     return " ".join(output)
 
 def merge(args):
@@ -141,8 +142,6 @@ def merge(args):
         src_coref = combine_utterance_response(questions, answers, history)
         tgt_coref = rewrite
 
-        if args.entites:
-            src_coref = combine_utterance_entity(questions, answers, history)
         if args.keywords:
             tgt_coref = omission_tokens(rewrite, question)
 
