@@ -101,6 +101,7 @@ def combine_utterance_response(utterances, responses, pre_history, current_i=-10
 def omission_tokens(rewrite_query, raw_query): 
     '''Extract the additional token with information.
     '''
+    pos = spacy.load("en_core_web_sm")
     rewrite_tokens = rewrite_query.lower().split()
     raw_tokens = raw_query.lower().split()
 
