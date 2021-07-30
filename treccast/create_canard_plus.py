@@ -107,9 +107,9 @@ def omission_tokens(rewrite_query, raw_query):
 
     diff_tokens = [token for token in rewrite_tokens if token not in raw_tokens]
     output = pos(" ".join(diff_tokens))
-    entities = [token.text for token in diff_tokens \
+    omission = [token.text for token in output \
             if (token.pos_ in ['NOUN', 'PROPN'])]
-    return " ".join(output)
+    return " ".join(omission)
 
 def merge(args):
 
