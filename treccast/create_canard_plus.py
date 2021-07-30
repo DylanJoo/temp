@@ -11,6 +11,8 @@ parser.add_argument("-quac-va", "--path_quac_val", default="val_quac.json", type
 parser.add_argument("-conv_qa", "--path_conv_qa", default="train_convqa.json", type=str)
 parser.add_argument("-out", "--path_output", default="train_canard+.json", type=str)
 parser.add_argument("--spacy", action="store_true", default=False)
+parser.add_argument("--entites", action="store_true", default=False)
+parser.add_argument("--keywords", action="store_true", default=False)
 args = parser.parse_args()
 
 
@@ -56,9 +58,9 @@ def combine_utterance_response(utterances, responses, pre_history, current_i=-10
     output = list()
     for i, (u, r) in enumerate(zip(utterances[:-1], responses[:-1])):
         if i >= (current_i - 1):
-            #output.append(u)
-            #output.append(r)
-            output.append("{} : {}".format(u, r))
+            output.append(u)
+            output.append(r)
+            # output.append("{} : {}".format(u, r))
         else:
             output.append(u)
     # If we need the pre-history like title or descprition.
@@ -97,7 +99,7 @@ def combine_utterance_entity(utterances, responses, pre_history, current_i=-100)
     return output
 
 # Rewrite 1
-def concat_response_tokens(rewrite_query, raw_query): 
+def omission_tokens(rewrite_query, raw_query): 
     '''Extract the additional token with information.
     '''
     rewrite_tokens = rewrite_query.lower().split()
@@ -105,7 +107,7 @@ def concat_response_tokens(rewrite_query, raw_query):
 
     output = [token for token in rewrite_tokens if token not in raw_tokens]
 
-    return rewrite_query + " | " + " ".join(output)
+    return " ".join(output)
 
 def merge(args):
 
@@ -137,9 +139,12 @@ def merge(args):
 
         # coreference resolution
         src_coref = combine_utterance_response(questions, answers, history)
-        #src_coref = combine_utterance_entity(questions, answers, history)
         tgt_coref = rewrite
-        tgt_coref = concat_response_tokens(rewrite, question)
+
+        if args.entites:
+            src_coref = combine_utterance_entity(questions, answers, history)
+        if args.keywords:
+            tgt_coref = omission_tokens(rewrite, question)
 
         if args.spacy:
             src_coref = ' '.join([tok.text for tok in nlp(src_coref)])
