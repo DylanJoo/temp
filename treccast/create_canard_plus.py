@@ -114,7 +114,7 @@ def omission_tokens(rewrite_query, raw_query):
     return " ".join(omission)
 
 # Rewrite 2
-def entities_expansions(rewrite_query, raw_query=False):
+def entities_expansion(rewrite_query, raw_query=False):
     '''Extract the additional token with information.
     '''
     rewrite_tokens = split()
@@ -126,15 +126,6 @@ def entities_expansions(rewrite_query, raw_query=False):
     else:
         return "{} ||| {}".format(rewrite_query, "|".join(omission))
 
-# Rewrite 3
-def _expansions(rewrite_query):
-    '''Extract the additional token with information.
-    '''
-    rewrite_tokens = split()
-    output = pos(rewrite_query.lower())
-    omission = [token.text for token in output \
-            if (token.pos_ in ['NOUN', 'PROPN'])]
-    return "{} ||| {}".format(rewrite_query, "|".join(omission))
 def merge(args):
 
     conv_qa = json.load(open(args.path_conv_qa, 'r'))
