@@ -59,7 +59,8 @@ def convert_quac_to_conv_qa(args):
 def combine_utterance_response(utterances, responses, pre_history, current_i=-100):
     '''Indicate the i-th turn would consist i-1, i-2, i-3'''
     output = list()
-    for i, (u, r) in enumerate(zip(utterances[:-1], responses[:-1])): if i >= (current_i - 1):
+    for i, (u, r) in enumerate(zip(utterances[:-1], responses[:-1])): 
+        if i >= (current_i - 1):
             output.append(u)
             output.append(r)
             # output.append("{} : {}".format(u, r))
