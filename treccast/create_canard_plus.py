@@ -15,7 +15,7 @@ parser.add_argument("--spacy", action="store_true", default=False)
 parser.add_argument("--keywords", action="store_true", default=False)
 parser.add_argument("--reverse", action="store_true", default=False)
 parser.add_argument("-re", "--response_expansion", action="store_true", default=False)
-parser.add_argument("-ee", "--entites_expansion", action="store_true", default=False)
+parser.add_argument("-ee", "--entities_expansion", action="store_true", default=False)
 args = parser.parse_args()
 
 
@@ -59,8 +59,7 @@ def convert_quac_to_conv_qa(args):
 def combine_utterance_response(utterances, responses, pre_history, current_i=-100):
     '''Indicate the i-th turn would consist i-1, i-2, i-3'''
     output = list()
-    for i, (u, r) in enumerate(zip(utterances[:-1], responses[:-1])):
-        if i >= (current_i - 1):
+    for i, (u, r) in enumerate(zip(utterances[:-1], responses[:-1])): if i >= (current_i - 1):
             output.append(u)
             output.append(r)
             # output.append("{} : {}".format(u, r))
@@ -148,7 +147,8 @@ def merge(args):
         qa = conv_qa[quac_turn_id]
         context = qa['context']
         questions += [question]
-        answers += [qa['answer']]
+        answer = qa['answer'] 
+        answers += [answer]
 
         # coreference resolution
         src_coref = combine_utterance_response(questions, answers, history)
@@ -177,11 +177,11 @@ def merge(args):
         #example_qa = "Response: {} Query: {} Rewrite:\n".format()
 
 print(args)
-if args.response_expansion and args.entites_expansion:
+if args.response_expansion and args.entities_expansion:
     print("Cannot use both expansion strategy.")
     exit(0)
 
-if args.keywords or ( args.response_expansion or args.entities_expansions):
+if args.keywords or ( args.response_expansion or args.entities_expansion):
     pos = spacy.load("en_core_web_sm")
 if args.spacy:
     nlp = English()
