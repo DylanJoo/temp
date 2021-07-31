@@ -12,7 +12,8 @@ parser.add_argument("-quac-va", "--path_quac_val", default="val_quac.json", type
 parser.add_argument("-conv_qa", "--path_conv_qa", default="train_convqa.json", type=str)
 parser.add_argument("-out", "--path_output", default="train_canard+.json", type=str)
 parser.add_argument("--spacy", action="store_true", default=False)
-parser.add_argument("--keywords", action="store_true", default=False)
+parser.add_argument("-keyword", "--key_token", action="store_true", default=False)
+parser.add_argument("-answer", "--answer_token", action="store_true", default=False)
 parser.add_argument("--reverse", action="store_true", default=False)
 parser.add_argument("-re", "--response_expansion", action="store_true", default=False)
 parser.add_argument("-ee", "--entities_expansion", action="store_true", default=False)
@@ -101,17 +102,17 @@ def combine_utterance_response(utterances, responses, pre_history, current_i=-10
 #     return output
 
 # Rewrite 1
-def omission_tokens(rewrite_query, raw_query): 
+def omission_tokens(token_source, raw_query, diff=False): 
     '''Extract the additional token with information.
     '''
-    rewrite_tokens = rewrite_query.lower().split()
-    raw_tokens = raw_query.lower().split()
+    if diff:
+        output = " ".join([token for token in token_source \
+        if token not in raw_query.lower().split()])
 
-    diff_tokens = [token for token in rewrite_tokens if token not in raw_tokens]
-    output = pos(" ".join(diff_tokens))
+    output = pos(token_source.lower())
     omission = [token.text for token in output \
             if (token.pos_ in ['NOUN', 'PROPN'])]
-    return " ".join(omission)
+    return " | ".join(omission)
 
 # Rewrite 2
 def entities_expansion(rewrite_query, expansion_source):
@@ -160,10 +161,12 @@ def merge(args):
             tgt_coref = question
         if args.response_expansion:
             tgt_coref = entities_expansion(rewrite, answer)
+        if args.key_token:
+            tgt_coref = omission_tokens(rewrite, question)
+        
         if args.entities_expansion:
-            tgt_coref = entities_expansion(rewrite, rewrite)
-
-        if args.keywords:
+            tgt_coref = entities_expansion(rewrite, rewrite)    
+        if args.answer_token:
             tgt_coref = omission_tokens(rewrite, question)
 
         if args.spacy:
@@ -181,8 +184,11 @@ print(args)
 if args.response_expansion and args.entities_expansion:
     print("Cannot use both expansion strategy.")
     exit(0)
+if args.key_token and args.answer_token:
+    print("Cannot use both token strategy.")
+    exit(0)
 
-if args.keywords or ( args.response_expansion or args.entities_expansion):
+if (args.key_token or args.answer_token) or ( args.response_expansion or args.entities_expansion):
     pos = spacy.load("en_core_web_sm")
 if args.spacy:
     nlp = English()
@@ -190,3 +196,4 @@ if args.spacy:
 convert_quac_to_conv_qa(args)
 merge(args)
 print("DONE")
+
