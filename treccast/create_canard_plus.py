@@ -13,6 +13,7 @@ parser.add_argument("-conv_qa", "--path_conv_qa", default="train_convqa.json", t
 parser.add_argument("-out", "--path_output", default="train_canard+.json", type=str)
 parser.add_argument("--spacy", action="store_true", default=False)
 parser.add_argument("--keywords", action="store_true", default=False)
+parser.add_argument("--reverse", action="store_true", default=False)
 args = parser.parse_args()
 
 
@@ -101,7 +102,6 @@ def combine_utterance_response(utterances, responses, pre_history, current_i=-10
 def omission_tokens(rewrite_query, raw_query): 
     '''Extract the additional token with information.
     '''
-    pos = spacy.load("en_core_web_sm")
     rewrite_tokens = rewrite_query.lower().split()
     raw_tokens = raw_query.lower().split()
 
@@ -143,6 +143,10 @@ def merge(args):
         src_coref = combine_utterance_response(questions, answers, history)
         tgt_coref = rewrite
 
+        if args.reverse:
+            src_coref = combine_utterance_response(questions, answers, history)
+            tgt_coref = rewrite
+
         if args.keywords:
             tgt_coref = omission_tokens(rewrite, question)
 
@@ -153,11 +157,13 @@ def merge(args):
         output.write("{}\t{}\n".format(src_coref, tgt_coref))
 
         if i % 1000 == 0:
-            print("{} record is finished...".format(i))
+            print("{} finished...".format(i))
         # question answering
         #example_qa = "Response: {} Query: {} Rewrite:\n".format()
 
 print(args)
+if args.keywords:
+    pos = spacy.load("en_core_web_sm")
 if args.spacy:
     nlp = English()
 #if os.path.isfile(args.path_conv_qa) is False:
