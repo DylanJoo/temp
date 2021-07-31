@@ -14,6 +14,7 @@ parser.add_argument("-out", "--path_output", default="train_canard+.json", type=
 parser.add_argument("--spacy", action="store_true", default=False)
 parser.add_argument("--keywords", action="store_true", default=False)
 parser.add_argument("--reverse", action="store_true", default=False)
+parser.add_argument("--expansion", action="store_true", default=False)
 args = parser.parse_args()
 
 
@@ -111,6 +112,16 @@ def omission_tokens(rewrite_query, raw_query):
             if (token.pos_ in ['NOUN', 'PROPN'])]
     return " ".join(omission)
 
+# Rewrite 2
+def entites_expansions(rewrite_query):
+    '''Extract the additional token with information.
+    '''
+    rewrite_tokens = split()
+    output = pos(rewrite_query.lower())
+    omission = [token.text for token in output \
+            if (token.pos_ in ['NOUN', 'PROPN'])]
+    return "{} ||| {}".format(rewrite_query, "|".join(omission))
+
 def merge(args):
 
     conv_qa = json.load(open(args.path_conv_qa, 'r'))
@@ -144,8 +155,8 @@ def merge(args):
         tgt_coref = rewrite
 
         if args.reverse:
-            src_coref = combine_utterance_response(questions, answers, history)
-            tgt_coref = rewrite
+            src_coref = combine_utterance_response(questions[:-1]+[rewrite], answers, history)
+            tgt_coref = question
 
         if args.keywords:
             tgt_coref = omission_tokens(rewrite, question)
@@ -162,7 +173,7 @@ def merge(args):
         #example_qa = "Response: {} Query: {} Rewrite:\n".format()
 
 print(args)
-if args.keywords:
+if args.keywords or args.expansion:
     pos = spacy.load("en_core_web_sm")
 if args.spacy:
     nlp = English()
