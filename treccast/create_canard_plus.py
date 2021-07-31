@@ -14,7 +14,7 @@ parser.add_argument("-out", "--path_output", default="train_canard+.json", type=
 parser.add_argument("--spacy", action="store_true", default=False)
 parser.add_argument("--keywords", action="store_true", default=False)
 parser.add_argument("--reverse", action="store_true", default=False)
-parser.add_argument("-qe", "--query_expansion", action="store_true", default=False)
+parser.add_argument("-re", "--response_expansion", action="store_true", default=False)
 parser.add_argument("-ee", "--entites_expansion", action="store_true", default=False)
 args = parser.parse_args()
 
@@ -177,7 +177,7 @@ def merge(args):
         #example_qa = "Response: {} Query: {} Rewrite:\n".format()
 
 print(args)
-if args.keywords or ( args.query_expansion or args.entities_expansions):
+if args.keywords or ( args.response_expansion or args.entities_expansions):
     pos = spacy.load("en_core_web_sm")
 if args.query_expansion and args.entites_expansion:
     print("Cannot use both expansion strategy.")
