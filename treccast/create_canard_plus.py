@@ -13,10 +13,11 @@ parser.add_argument("-conv_qa", "--path_conv_qa", default="train_convqa.json", t
 parser.add_argument("-out", "--path_output", default="train_canard+.json", type=str)
 parser.add_argument("--spacy", action="store_true", default=False)
 parser.add_argument("-keyword", "--key_token", action="store_true", default=False)
+parser.add_argument("-response", action="store_true", default=False)
 parser.add_argument("-answer", "--answer_token", action="store_true", default=False)
 parser.add_argument("--reverse", action="store_true", default=False)
-parser.add_argument("-re", "--response_expansion", action="store_true", default=False)
-parser.add_argument("-ee", "--entities_expansion", action="store_true", default=False)
+parser.add_argument("-rexp", "--response_expansion", action="store_true", default=False)
+parser.add_argument("-eexp", "--entities_expansion", action="store_true", default=False)
 args = parser.parse_args()
 
 
@@ -111,16 +112,16 @@ def omission_tokens(raw_query, token_source, diff=False):
 
     output = pos(token_source.lower())
     omission = [token.text for token in output \
-            if (token.pos_ in ['NOUN', 'PROPN', 'ADJ'])]
+            if (token.pos_ in ['NOUN', 'PROPN'])]
     return " | ".join(omission)
 
 # Rewrite 2
-def entities_expansion(rewrite_query, expansion_source):
+def tokens_expansion(rewrite_query, expansion_source):
     '''Extract the additional token with information.
     '''
     output = pos(expansion_source.lower())
     entities = [token.text for token in output \
-            if (token.pos_ in ['NOUN', 'PROPN', 'ADJ'])]
+            if (token.pos_ in ['NOUN', 'PROPN'])]
     return "{} ||| {}".format(rewrite_query, " | ".join(entities))
 
 def merge(args):
@@ -155,17 +156,21 @@ def merge(args):
         # coreference resolution
         src_coref = combine_utterance_response(questions, answers, history)
         tgt_coref = rewrite
+        
+        if args.response:
+            tgt_coref = rewrite + " ||| " + answer
 
         if args.reverse:
             src_coref = combine_utterance_response(questions[:-1]+[rewrite], answers, history)
             tgt_coref = question
+
         if args.response_expansion:
-            tgt_coref = entities_expansion(rewrite, answer)
+            tgt_coref = tokens_expansion(rewrite, answer)
         if args.answer_token:
             tgt_coref = omission_tokens(rewrite, answer)
         
         if args.entities_expansion:
-            tgt_coref = entities_expansion(rewrite, rewrite)    
+            tgt_coref = tokens_expansion(rewrite, rewrite)    
         if args.key_token:
             tgt_coref = omission_tokens(rewrite, rewrite)
 
