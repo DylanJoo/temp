@@ -177,11 +177,12 @@ def merge(args):
         #example_qa = "Response: {} Query: {} Rewrite:\n".format()
 
 print(args)
-if args.keywords or ( args.response_expansion or args.entities_expansions):
-    pos = spacy.load("en_core_web_sm")
-if args.query_expansion and args.entites_expansion:
+if args.response_expansion and args.entites_expansion:
     print("Cannot use both expansion strategy.")
     exit(0)
+
+if args.keywords or ( args.response_expansion or args.entities_expansions):
+    pos = spacy.load("en_core_web_sm")
 if args.spacy:
     nlp = English()
 #if os.path.isfile(args.path_conv_qa) is False:
