@@ -113,7 +113,20 @@ def omission_tokens(rewrite_query, raw_query):
     return " ".join(omission)
 
 # Rewrite 2
-def entites_expansions(rewrite_query):
+def entities_expansions(rewrite_query, raw_query=False):
+    '''Extract the additional token with information.
+    '''
+    rewrite_tokens = split()
+    output = pos(rewrite_query.lower())
+    omission = [token.text for token in output \
+            if (token.pos_ in ['NOUN', 'PROPN'])]
+    if raw_query:
+        return "{} ||| {}".format(raw_query, "|".join(omission))
+    else:
+        return "{} ||| {}".format(rewrite_query, "|".join(omission))
+
+# Rewrite 3
+def _expansions(rewrite_query):
     '''Extract the additional token with information.
     '''
     rewrite_tokens = split()
@@ -121,7 +134,6 @@ def entites_expansions(rewrite_query):
     omission = [token.text for token in output \
             if (token.pos_ in ['NOUN', 'PROPN'])]
     return "{} ||| {}".format(rewrite_query, "|".join(omission))
-
 def merge(args):
 
     conv_qa = json.load(open(args.path_conv_qa, 'r'))
@@ -157,6 +169,10 @@ def merge(args):
         if args.reverse:
             src_coref = combine_utterance_response(questions[:-1]+[rewrite], answers, history)
             tgt_coref = question
+        if args.query_expansion:
+            tgt_coref = entities_expansion(rewrite, question)
+        if args.entites_expansion:
+            tgt_coref = entities_expansion(rewrite)
 
         if args.keywords:
             tgt_coref = omission_tokens(rewrite, question)
