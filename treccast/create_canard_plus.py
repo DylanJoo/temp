@@ -114,17 +114,13 @@ def omission_tokens(rewrite_query, raw_query):
     return " ".join(omission)
 
 # Rewrite 2
-def entities_expansion(rewrite_query, raw_query=False):
+def entities_expansion(rewrite_query, expansion_source):
     '''Extract the additional token with information.
     '''
-    rewrite_tokens = split()
-    output = pos(rewrite_query.lower())
-    omission = [token.text for token in output \
+    output = pos(expansion_source.lower())
+    entities = [token.text for token in output \
             if (token.pos_ in ['NOUN', 'PROPN'])]
-    if raw_query:
-        return "{} ||| {}".format(raw_query, "|".join(omission))
-    else:
-        return "{} ||| {}".format(rewrite_query, "|".join(omission))
+    return "{} ||| {}".format(rewrite_query, " | ".join(entities))
 
 def merge(args):
 
@@ -161,10 +157,10 @@ def merge(args):
         if args.reverse:
             src_coref = combine_utterance_response(questions[:-1]+[rewrite], answers, history)
             tgt_coref = question
-        if args.query_expansion:
-            tgt_coref = entities_expansion(rewrite, question)
-        if args.entites_expansion:
-            tgt_coref = entities_expansion(rewrite)
+        if args.response_expansion:
+            tgt_coref = entities_expansion(rewrite, answer)
+        if args.entities_expansion:
+            tgt_coref = entities_expansion(rewrite, rewrite)
 
         if args.keywords:
             tgt_coref = omission_tokens(rewrite, question)
