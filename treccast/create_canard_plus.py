@@ -12,7 +12,7 @@ parser.add_argument("-quac-va", "--path_quac_val", default="val_quac.json", type
 parser.add_argument("-conv_qa", "--path_conv_qa", default="train_convqa.json", type=str)
 parser.add_argument("-out", "--path_output", default="train_canard+.json", type=str)
 parser.add_argument("--spacy", action="store_true", default=False)
-parser.add_argument("-question", action="store_true", default=False)
+parser.add_argument("-rewrite", action="store_true", default=False)
 parser.add_argument("-response", action="store_true", default=False)
 parser.add_argument("--reverse", action="store_true", default=False)
 parser.add_argument("-eexp", "--entity_expansion", action="store_true", default=False)
@@ -179,7 +179,7 @@ def merge(args):
             if args.entity_extraction:
                 tgt_coref = omission_tokens(rewrite, answer)
         
-        if args.question:
+        if args.rewrite:
             #tgt_coref = sentence_concatenate(rewrite, rewrite)
             if args.entity_expansion:
                 tgt_coref = tokens_expansion(rewrite, rewrite)  
@@ -198,7 +198,7 @@ def merge(args):
         #example_qa = "Response: {} Query: {} Rewrite:\n".format()
 
 print(args)
-if args.response and args.question:
+if args.response and args.rewrite:
     print("Cannot use both expansion source.")
     exit(0)
 if args.entity_extraction and args.entity_expansion:
