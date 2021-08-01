@@ -12,12 +12,11 @@ parser.add_argument("-quac-va", "--path_quac_val", default="val_quac.json", type
 parser.add_argument("-conv_qa", "--path_conv_qa", default="train_convqa.json", type=str)
 parser.add_argument("-out", "--path_output", default="train_canard+.json", type=str)
 parser.add_argument("--spacy", action="store_true", default=False)
-parser.add_argument("-keyword", "--key_token", action="store_true", default=False)
+parser.add_argument("-question", action="store_true", default=False)
 parser.add_argument("-response", action="store_true", default=False)
-parser.add_argument("-answer", "--answer_token", action="store_true", default=False)
 parser.add_argument("--reverse", action="store_true", default=False)
-parser.add_argument("-rexp", "--response_expansion", action="store_true", default=False)
-parser.add_argument("-eexp", "--entities_expansion", action="store_true", default=False)
+parser.add_argument("-eexp", "--entity_expansion", action="store_true", default=False)
+parser.add_argument("-eext", "--entity_extraction", action="store_true", default=False)
 args = parser.parse_args()
 
 
@@ -103,6 +102,12 @@ def combine_utterance_response(utterances, responses, pre_history, current_i=-10
 #     return output
 
 # Rewrite 1
+def sentence_concatenate(rewrite_query, concat_source): 
+    '''Appending the targeting sentences.
+    '''
+    return "{} ||| {}".format(rewrite_query, concat_source)
+
+# Rewrite 2
 def omission_tokens(raw_query, token_source, diff=False): 
     '''Extract the additional token with information.
     '''
@@ -115,7 +120,7 @@ def omission_tokens(raw_query, token_source, diff=False):
             if (token.pos_ in ['NOUN', 'PROPN'])]
     return " | ".join(omission)
 
-# Rewrite 2
+# Rewrite 3
 def tokens_expansion(rewrite_query, expansion_source):
     '''Extract the additional token with information.
     '''
@@ -151,7 +156,10 @@ def merge(args):
         context = qa['context']
         questions += [question]
         answer = qa['answer'] 
+        if answer == "CANNOTANSWER":
+            answer = " "
         answers += [answer]
+        
 
         # coreference resolution
         src_coref = combine_utterance_response(questions, answers, history)
@@ -164,15 +172,19 @@ def merge(args):
             src_coref = combine_utterance_response(questions[:-1]+[rewrite], answers, history)
             tgt_coref = question
 
-        if args.response_expansion:
-            tgt_coref = tokens_expansion(rewrite, answer)
-        if args.answer_token:
-            tgt_coref = omission_tokens(rewrite, answer)
+        if args.response:
+            tgt_coref = sentence_concatenate(rewrite, answer)
+            if args.entity_expansion:
+                tgt_coref = tokens_expansion(rewrite, answer)
+            if args.entity_extraction:
+                tgt_coref = omission_tokens(rewrite, answer)
         
-        if args.entities_expansion:
-            tgt_coref = tokens_expansion(rewrite, rewrite)    
-        if args.key_token:
-            tgt_coref = omission_tokens(rewrite, rewrite)
+        if args.question:
+            #tgt_coref = sentence_concatenate(rewrite, rewrite)
+            if args.entity_expansion:
+                tgt_coref = tokens_expansion(rewrite, rewrite)  
+            if args.entity_extraction:
+                tgt_coref = omission_tokens(rewrite, rewrite)
 
         if args.spacy:
             src_coref = ' '.join([tok.text for tok in nlp(src_coref)])
@@ -186,14 +198,14 @@ def merge(args):
         #example_qa = "Response: {} Query: {} Rewrite:\n".format()
 
 print(args)
-if args.response_expansion and args.entities_expansion:
+if args.response and args.question:
+    print("Cannot use both expansion source.")
+    exit(0)
+if args.entity_extraction and args.entity_expansion:
     print("Cannot use both expansion strategy.")
     exit(0)
-if args.key_token and args.answer_token:
-    print("Cannot use both token strategy.")
-    exit(0)
 
-if (args.key_token or args.answer_token) or ( args.response_expansion or args.entities_expansion):
+if args.entity_extraction or args.entity_expansion:
     pos = spacy.load("en_core_web_sm")
 if args.spacy:
     nlp = English()
