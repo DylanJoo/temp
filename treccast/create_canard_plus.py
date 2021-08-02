@@ -172,8 +172,6 @@ def merge(args):
 
         if args.response:
             tgt_coref = sentence_concatenate(rewrite, answer)
-            if answer == "CANNOTANSWER":
-                answer = ""
             if args.entity_expansion:
                 tgt_coref = tokens_expansion(rewrite, answer)
             if args.entity_extraction:
