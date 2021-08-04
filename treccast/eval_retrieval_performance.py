@@ -15,7 +15,7 @@ def convert_run_to_dict(run_file):
         runs[qid].append((pid, rank))
     
     for i, qid, plist in enumerate(runs.items()):
-        runs[qid] = [pid for (pid, rank) in sorted(plist, lambda x: x[1])]
+        runs[qid] = [pid for (pid, rank) in sorted(plist, key=lambda x: x[1])]
 
     return runs
 
@@ -31,7 +31,8 @@ def eval_relevance(args):
     baseline = convert_run_to_dict(baseline)
     reference = convert_run_to_dict(reference)
 
-    for i, (qid, _, pid, _) in enumerate(relevance):
+    for i, line in enumerate(relevance):
+        qid, _, pid, _ = line.strip().split()
         try:
             rank_baseline = baseline[qid].index(pid) + 1
             overall_eval['baseline'].append(rank_baseline)
@@ -44,7 +45,7 @@ def eval_relevance(args):
         except:
             rank_reference = -1
         
-        if rank_baseline < rank_refernce:
+        if rank_baseline < rank_reference:
             WTL['lose'] +=1
         elif rank_baseline > rank_reference:
             WTL['win'] += 1
@@ -55,7 +56,7 @@ def eval_relevance(args):
 
     print("Total query: {}\nBasline hit: {}\nReference hit: {}".format(
         i+1, len(overall_eval['baseline']), len(overall_eval['reference'])))
-    print(WTL)
+    print(WTL.items())
 
 eval_relevance(args)
 print("DONE")
