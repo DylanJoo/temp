@@ -26,6 +26,8 @@ def eval_relevance(args):
     relevance = open(args.groundtruth_relevance, 'r') 
     eval_out = open("evaluation.tsv", 'w')
     
+    overall_eval = defaultdict(list)
+    WTL = defaultdict(int)
     baseline = convert_run_to_dict(baseline)
     reference = convert_run_to_dict(reference)
 
@@ -40,7 +42,18 @@ def eval_relevance(args):
         except:
             rank_reference = -1
         
+        if rank_baseline < rank_refernce:
+            WTL['lose'] +=1
+        elif rank_baseline > rank_reference:
+            WTL['win'] += 1
+        else:
+            WTL['tie'] += 1
+
         eval_out.write("{}\t{}\t{}\t{}\n".format(qid, pid, rank_baseline, rank_reference))
+
+    print("Total query: {}\nBasline hit: {}\nReference hit: {}".format(
+        i+1, len(WTL['baseline']), len(WTL['reference'])))
+    print(WTL)
 
 eval_relevance(args)
 print("DONE)
