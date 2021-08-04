@@ -18,7 +18,7 @@ def convert(args):
         answer = quac_dict['answer']
 
         fout.write("Question: {} Context: {} Answer:\t{}\n".format(
-            context, question, answer))
+            question, context, answer))
         if i % 1000 == 0:
             print("{} QA example finished...".format(i))
 
