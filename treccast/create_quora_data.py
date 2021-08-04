@@ -25,7 +25,7 @@ def get_duplicate_question_pairs(args):
         except:
            pass 
 
-        if i % 1000 == 0:
+        if i % 100000 == 0:
             print("{} example is processed, {} duplicated pair ".format(i, j))
 
 
