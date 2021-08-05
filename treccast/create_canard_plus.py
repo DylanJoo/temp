@@ -134,6 +134,8 @@ def merge(args):
     conv_qa = json.load(open(args.path_conv_qa, 'r'))
     canard = json.load(open(args.path_canard, 'r'))
     output = open(args.path_output, 'w')
+    if args.reverse:
+        output_reverse = open(args.path_output + "-reverse", 'w')
     quac_id = ""
 
     for i, dict_canard in enumerate(canard):
@@ -151,13 +153,15 @@ def merge(args):
         if new_topic:
             answers = list()
             questions = list()
+            rewrites = list()
             new_topic = False
+
         qa = conv_qa[quac_turn_id]
         context = qa['context']
         questions += [question]
         answer = qa['answer'] 
         answers += [answer]
-        
+        rewrites += [rewrite] 
 
         # coreference resolution
         src_coref = combine_utterance_response(questions, answers, history)
@@ -167,8 +171,9 @@ def merge(args):
             tgt_coref = rewrite + " ||| " + answer
 
         if args.reverse:
-            src_coref = combine_utterance_response(questions[:-1]+[rewrite], answers, history)
-            tgt_coref = question
+            src_coref_re = combine_utterance_response(rewrites, answers, history)
+            tgt_coref_re = question
+            output_revese.write("{}\t{}\n".format(src_coref_re, tgt_coref_re))
 
         if args.response:
             tgt_coref = sentence_concatenate(rewrite, answer)
