@@ -14,7 +14,7 @@ def convert_run_to_dict(run_file):
         qid, pid, rank = line.strip().split('\t')
         runs[qid].append((pid, rank))
     
-    for i, qid, plist in enumerate(runs.items()):
+    for i, (qid, plist) in enumerate(runs.items()):
         runs[qid] = [pid for (pid, rank) in sorted(plist, key=lambda x: x[1])]
 
     return runs
