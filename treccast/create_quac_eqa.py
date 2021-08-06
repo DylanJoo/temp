@@ -5,6 +5,7 @@ import io
 parser = argparse.ArgumentParser()
 parser.add_argument("-conv_qa", "--path_conv_qa", default="train_convqa.json", type=str)
 parser.add_argument("-quac_out", "--path_quac_output", default="QuAC_span_qa.train.tsv", type=str)
+parser.add_argument("-orig", "--original_answer", type=str)
 args = parser.parse_args()
 
 def convert(args):
@@ -15,7 +16,10 @@ def convert(args):
     for i, (quac_turn_id, quac_dict) in enumerate(conv_qa.items()):
         context = quac_dict['context']
         question = quac_dict['question']
-        answer = quac_dict['answer']
+        if args.original_answer:
+            answer = quac_dict['orig_answer']
+        else:
+            answer = quac_dict['answer']
 
         fout.write("Question: {} Context: {} Answer:\t{}\n".format(
             question, context, answer))

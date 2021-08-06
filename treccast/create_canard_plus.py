@@ -41,7 +41,7 @@ def convert_quac_to_conv_qa(args):
         for i_turn, turn in enumerate(content['qas']):
             question = turn['question']
             # The "natrual language-like answer'
-            #answer = turn['answers'][0]
+            answer = turn['answers'][0]
             # THe "Original" answert from the given context
             orig_answer = turn['orig_answer']['text']
             
@@ -51,7 +51,8 @@ def convert_quac_to_conv_qa(args):
             if int(turn_id) != i_turn:
                 print("Mismatch found in {}, Corrected from q#{} to q#{}".format(conversation_id, turn_id, i_turn))
                 question_id = "{}_q#{}".format(conversation_id, i_turn) 
-            conv_qa_dict[question_id] = {"context": context, "question": question, "answer": orig_answer}
+            conv_qa_dict[question_id] = {"context": context, "question": question, 
+                    "answer": answer,"orig_answer": orig_answer}
     
     json.dump(conv_qa_dict, conversational_qa) 
     print("{} have been converted...".format(args.path_conv_qa))
@@ -173,7 +174,7 @@ def merge(args):
         if args.reverse:
             src_coref_re = combine_utterance_response(rewrites, answers, history)
             tgt_coref_re = question
-            output_revese.write("{}\t{}\n".format(src_coref_re, tgt_coref_re))
+            output_reverse.write("{}\t{}\n".format(src_coref_re, tgt_coref_re))
 
         if args.response:
             tgt_coref = sentence_concatenate(rewrite, answer)
