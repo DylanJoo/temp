@@ -23,7 +23,7 @@ def convert(args):
 
         fout.write("Question: {} Context: {} Answer:\t{}\n".format(
             question, context, answer))
-        if i % 1000 == 0:
+        if i % 10000 == 0:
             print("{} QA example finished...".format(i))
 
 convert(args)

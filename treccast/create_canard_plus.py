@@ -41,7 +41,7 @@ def convert_quac_to_conv_qa(args):
         for i_turn, turn in enumerate(content['qas']):
             question = turn['question']
             # The "natrual language-like answer'
-            answer = turn['answers'][0].replace("CANNOTANSWER", "I don't know.")
+            answer = turn['answers'][0]['text'].replace("CANNOTANSWER", "I don't know.")
             # THe "Original" answert from the given context
             orig_answer = turn['orig_answer']['text'].replace("CANNOTANSWER", "I don't know.")
             
