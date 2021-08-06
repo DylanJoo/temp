@@ -41,9 +41,9 @@ def convert_quac_to_conv_qa(args):
         for i_turn, turn in enumerate(content['qas']):
             question = turn['question']
             # The "natrual language-like answer'
-            answer = turn['answers'][0]
+            answer = turn['answers'][0].replace("CANNOTANSWER", "I don't know.")
             # THe "Original" answert from the given context
-            orig_answer = turn['orig_answer']['text']
+            orig_answer = turn['orig_answer']['text'].replace("CANNOTANSWER", "I don't know.")
             
             question_id = turn['id']
             conversation_id, turn_id = question_id.split("_q#")
@@ -168,9 +168,6 @@ def merge(args):
         src_coref = combine_utterance_response(questions, answers, history)
         tgt_coref = rewrite
         
-        if args.response:
-            tgt_coref = rewrite + " ||| " + answer
-
         if args.reverse:
             src_coref_re = combine_utterance_response(rewrites, answers, history)
             tgt_coref_re = question
