@@ -45,8 +45,8 @@ def convert_lif_to_clf_task(args):
 
             qa_prev = " ||| ".join(qa_prev)
 
-            fout.write("Question: {} History: {} Follow-up:\t{}\n".format(
-                question, qa_prev, followup) 
+            fout.write("{} ||| {} Follow-up:\t{}\n".format(
+                qa_prev, question,followup) 
 
 
 convert_lif_to_clf_task(args)

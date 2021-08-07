@@ -22,7 +22,7 @@ def convert(args):
         else:
             answer = quac_dict['answer']
 
-        context.replace("CANNOTANSWER", "")
+        context = context.replace("CANNOTANSWER", "")
         
         if args.answerable:
             if answer != "I don't know.":
