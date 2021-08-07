@@ -21,8 +21,16 @@ def convert(args):
         else:
             answer = quac_dict['answer']
 
-        fout.write("Question: {} Context: {} Answer:\t{}\n".format(
-            question, context, answer))
+        context.replace("CANNOTANSWER", "")
+        
+        if args.answerable:
+            if answer != "I don't know.":
+                fout.write("Question: {} Context: {} Answer:\t{}\n".format(
+                    question, context, answer))
+        else:
+            fout.write("Question: {} Context: {} Answer:\t{}\n".format(
+                question, context, answer))
+
         if i % 10000 == 0:
             print("{} QA example finished...".format(i))
 
