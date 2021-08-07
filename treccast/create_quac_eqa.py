@@ -6,6 +6,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-conv_qa", "--path_conv_qa", default="train_convqa.json", type=str)
 parser.add_argument("-quac_out", "--path_quac_output", default="QuAC_span_qa.train.tsv", type=str)
 parser.add_argument("-orig", "--original_answer", action="store_true", default=False)
+parser.add_argument("-answer", "--answerable", action="store_true", default=False)
 args = parser.parse_args()
 
 def convert(args):
