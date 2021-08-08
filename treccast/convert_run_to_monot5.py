@@ -9,6 +9,8 @@ parser.add_argument("--queries", type=str, required=True,
                     help="tsv file with two columns, <query_id> and <query_text>")
 parser.add_argument("--run", type=str, required=True,
                     help="tsv file with three columns <query_id>, <doc_id> and <rank>")
+parser.add_argument("--trec", type=str, required=False,
+                    help="trec file with six columns <query_id>, _, <doc_id>, <rank>, _, _")
 parser.add_argument("--corpus", type=str, required=True, 
                     help="json/tsv file with <doc_id> and <doc_text> or <passage_id> and <passage_text>")
 parser.add_argument("-d", "--doc_level", action="store_true", default=True,  

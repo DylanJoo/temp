@@ -1,6 +1,6 @@
 import argparse
 
-args = ArgumentParser()
+args = argparse.ArgumentParser()
 parser.add_argument("-lif_json", "--path_lif", type=str)
 parser.add_argument("-lif_tsv", "--path_lif_output", type=str)
 parser.add_argument("-lag", "--n_previous_question", default=1, type=int)
@@ -14,7 +14,7 @@ def convert_lif_to_clf_task(args):
     lif_data = lif['data']
     fout = open(args.path_lif_output, 'w')
 
-    for i_topic, topic enumerate(lif_data):
+    for i_topic, topic in enumerate(lif_data):
 
         content = topic['paragraphs'][0]
 
@@ -24,7 +24,7 @@ def convert_lif_to_clf_task(args):
             question = turn['candidate']
 
             # Label of follow-up
-            if turn['label'] == 0:
+            if turn['label'] == 1:
                 followup = "true"
             else:
                 followup = "false"
@@ -39,14 +39,14 @@ def convert_lif_to_clf_task(args):
             # Context(Q and A) before i
             qa_prev = list()
             for i, q in enumerate(question_prev):
-                qa.append(q)
-                if args.answer:
-                    qa.append(answer_prev[i])
+                qa_prev.append(q)
+                if args.include_answer:
+                    qa_prev.append(answer_prev[i])
 
             qa_prev = " ||| ".join(qa_prev)
 
             fout.write("{} ||| {} Follow-up:\t{}\n".format(
-                qa_prev, question,followup) 
+                qa_prev, question,followup))
 
 
 convert_lif_to_clf_task(args)
