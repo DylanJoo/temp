@@ -45,8 +45,6 @@ def eval_relevance(args):
 
     for i, line in enumerate(relevance):
         qid, _, pid, _ = line.strip().split()
-        query_basline = 
-        query_reference = 
         try:
             rank_baseline = baseline[qid].index(pid) + 1
             overall_eval['baseline'].append(rank_baseline)
@@ -67,7 +65,7 @@ def eval_relevance(args):
             WTL['tie'] += 1
 
         eval_out.write("{}\t{}\t{}\t{}\n".format(qid, rank_baseline, rank_reference, qid, pid))
-        eval_out.write("{}\t{}\n".format())
+        eval_out.write("{}\t{}\n".format(query_baseline[qid], query_reference[qid]))
 
     print("Total query: {}\nBasline hit: {}\nReference hit: {}".format(
         i+1, len(overall_eval['baseline']), len(overall_eval['reference'])))
