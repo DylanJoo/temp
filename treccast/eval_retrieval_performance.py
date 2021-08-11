@@ -4,6 +4,8 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-runs1", "--baseline_run", type=str)
 parser.add_argument("-runs2", "--reference_run", type=str)
+parser.add_argument("-queries1", "--baseline_queries", type=str)
+parser.add_argument("-queries2", "--reference_queries", type=str)
 parser.add_argument("-rels", "--groundtruth_trec", type=str)
 args = parser.parse_args()
 
@@ -19,12 +21,22 @@ def convert_run_to_dict(run_file):
 
     return runs
 
+def load_query(path):
+    output = dict()
+    data = open(path, 'r')
+    for line in data:
+        qid, query = line.strip().split('\t')
+        output[qid] = query
+    return output
+
 def eval_relevance(args):
 
     baseline = open(args.baseline_run, 'r')
     reference = open(args.reference_run, 'r')
     relevance = open(args.groundtruth_trec, 'r') 
     eval_out = open("evaluation.tsv", 'w')
+    query_baseline = load_query(args.baseline_queries)
+    query_reference = load_query(args.reference_queries)
     
     overall_eval = collections.defaultdict(list)
     WTL = collections.defaultdict(int)
@@ -33,6 +45,8 @@ def eval_relevance(args):
 
     for i, line in enumerate(relevance):
         qid, _, pid, _ = line.strip().split()
+        query_basline = 
+        query_reference = 
         try:
             rank_baseline = baseline[qid].index(pid) + 1
             overall_eval['baseline'].append(rank_baseline)
@@ -52,7 +66,8 @@ def eval_relevance(args):
         else:
             WTL['tie'] += 1
 
-        eval_out.write("{}\t{}\t{}\t{}\n".format(qid, pid, rank_baseline, rank_reference))
+        eval_out.write("{}\t{}\t{}\t{}\n".format(qid, rank_baseline, rank_reference, qid, pid))
+        eval_out.write("{}\t{}\n".format())
 
     print("Total query: {}\nBasline hit: {}\nReference hit: {}".format(
         i+1, len(overall_eval['baseline']), len(overall_eval['reference'])))
