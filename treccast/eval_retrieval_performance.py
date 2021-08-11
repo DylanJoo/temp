@@ -64,7 +64,7 @@ def eval_relevance(args):
         else:
             WTL['tie'] += 1
 
-        eval_out.write("{}\t{}\t{}\t{}\n".format(qid, rank_baseline, rank_reference, qid, pid))
+        eval_out.write("{}\t{}\t{}\t{}\n".format(qid, rank_baseline, rank_reference, pid))
         eval_out.write("{}\t{}\n".format(query_baseline[qid], query_reference[qid]))
 
     print("Total query: {}\nBasline hit: {}\nReference hit: {}".format(
