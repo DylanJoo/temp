@@ -8,10 +8,11 @@ parser.add_argument("-flogits", "--path_false_logit", type=str)
 parser.add_argument("-tlogits", "--path_true_logit", type=str)
 parser.add_argument("-score", "--path_score", type=str)
 parser.add_argument("-runs", "--path_runs", type=str)
+parser.add_argument("-topk", default=1000, type=int)
 parser.add_argument("-rerank_runs", "--path_rerank_runs", type=str)
 parser.add_argument("--resoftmax", action="store_true", default=True)
 parser.add_argument("--trec", action="store_true", default=True)
-args = parser.parse_args()
+args = parser.parse_args() 
 
 def convert_logit_to_prob(args):
 
@@ -47,10 +48,10 @@ def rerank_runs(args):
     '''example: query_candidate[query7777] = [(doc1111, 0.98, 0.02), (doc2222, 0.99, 0.01), ....]
     '''
 
-    with tf.io.gfile.GFile(args.path_rerank_run, 'w') as f:
+    with tf.io.gfile.GFile(args.path_rerank_runs, 'w') as f:
         for i, (qid, candidate_passage_list) in enumerate(query_candidates.items()):
             # Using true prob as score, so reverse the order.
-            candidate_passage_list = sorted(candidate_passage_list, key=lambda x: x[1], reverse=True)
+            candidate_passage_list = sorted(candidate_passage_list[:args.topk], key=lambda x: x[1], reverse=True)
             for idx, (docid, true_prob, false_prob) in enumerate(candidate_passage_list):
                 if args.trec:
                     example = '{} Q0 {} {} {} reranking\n'.format(qid, docid, str(idx+1), 1.0/(idx+1))
