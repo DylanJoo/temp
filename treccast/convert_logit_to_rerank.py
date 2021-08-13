@@ -10,7 +10,7 @@ parser.add_argument("-score", "--path_score", type=str)
 parser.add_argument("-runs", "--path_runs", type=str)
 parser.add_argument("-rerank_runs", "--path_rerank_runs", type=str)
 parser.add_argument("--resoftmax", action="store_true", default=True)
-parser.add_argument("--trec", action="store_true", type=str)
+parser.add_argument("--trec", action="store_true", default=True)
 args = parser.parse_args()
 
 def convert_logit_to_prob(args):
