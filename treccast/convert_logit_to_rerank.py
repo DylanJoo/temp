@@ -15,9 +15,9 @@ args = parser.parse_args()
 
 def convert_logit_to_prob(args):
 
-    with tf.io.gfile,GFile(args.path_score, 'w') as f, \
-    tf.io.gfile.GFile(true_path, "r") as true_logits, \
-    tf.io.gfile.GFile(false_path, "r") as false_logits:
+    with tf.io.gfile.GFile(args.path_score, 'w') as f, \
+    tf.io.gfile.GFile(args.path_true_logit, "r") as true_logits, \
+    tf.io.gfile.GFile(args.path_false_logit, "r") as false_logits:
 
         for i, (true_logit, false_logit) in enumerate(zip(true_logits, false_logits)):
             true_prob = np.exp(float(true_logit))
