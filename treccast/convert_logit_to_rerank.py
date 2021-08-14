@@ -43,7 +43,8 @@ def rerank_runs(args):
 
         for i, (score_line, run_line) in enumerate(zip(score_file, baseline_run_file)):
             true_prob, false_prob, _ = score_line.rstrip().split('\t')
-            qid, docid, _ = run_line.rstrip().split('\t')
+            qid, docid, order = run_line.rstrip().split('\t')
+            if float(order) < args.topk:
             query_candidates[qid].append((docid, true_prob, false_prob))
     '''example: query_candidate[query7777] = [(doc1111, 0.98, 0.02), (doc2222, 0.99, 0.01), ....]
     '''
