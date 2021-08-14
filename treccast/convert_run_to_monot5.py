@@ -115,7 +115,7 @@ def load_run(path, topk, trec=False):
     print('Sorting candidate docs by rank...')
     sorted_run = collections.OrderedDict()
     for i, (qid, doc_ids_ranks) in enumerate(run.items()):
-        sorted(doc_ids_ranks, key=lambda x: x[1])
+        doc_ids_ranks = sorted(doc_ids_ranks, key=lambda x: x[1])
         docids = [docid for docid, _ in doc_ids_ranks]
         sorted_run[qid] = docids
 
@@ -124,11 +124,11 @@ def load_run(path, topk, trec=False):
         topk, len(candidate_docs)))
     return sorted_run, candidate_docs
 
-def normalized(strings_title, strings):
+def normalized(strings, strings_title="No Title"):
     if strings_title != "No Title":
         strings = strings_title + " " + strings 
     strings = re.sub(r"\n", " ", strings)
-    strings = re.sub(r"\s{2, }", " ", strings)
+    # strings = re.sub(r"\s{2, }", " ", strings)
     return strings.strip()
 
 # Load requirements (corpus, queries, runs)
@@ -144,20 +144,20 @@ with open(args.output_text_pair, 'w') as text_pair, open(args.output_id_pair, 'w
     for i, (qid, docids) in enumerate(runs.items()):
         # Only create for tok_k candidates
 
-        for docid in docids:
+        for k, docid in enumerate(docids):
             if args.doc_level:
 
                 for passage in corpus[docid]:
                     text_example = "Query: {} Document: {} Relevant:\n".format(
-                            queries[qid], normalized(titles[docid], passage["body"]))
-                    id_example = "{}\t{}-{}\t{}\n".format(qid, docid, passage["id"], (i+1)+0.001*passage["id"])
+                            queries[qid], normalized(passage["body"]))
+                    id_example = "{}\t{}-{}\t{}\n".format(qid, docid, passage["id"], (k+1))
                     text_pair.write(text_example)
                     id_pair.write(id_example)
                     n_passage += 1
             else:
                 text_example = "Query: {} Document: {} Relevant:\n".format(
                         queries[qid], normalized(titles[docid], corpus[docid]))
-                id_example = "{}\t{}\t{}\n".format(qid, docid, i+1)
+                id_example = "{}\t{}\t{}\n".format(qid, docid, (k+1))
                 text_pair.write(text_example)
                 id_pair.write(id_example)
                 n_passage += 1
