@@ -45,14 +45,14 @@ def rerank_runs(args):
             true_prob, false_prob, _ = score_line.rstrip().split('\t')
             qid, docid, order = run_line.rstrip().split('\t')
             if float(order) < args.topk:
-            query_candidates[qid].append((docid, true_prob, false_prob))
+                query_candidates[qid].append((docid, true_prob, false_prob))
     '''example: query_candidate[query7777] = [(doc1111, 0.98, 0.02), (doc2222, 0.99, 0.01), ....]
     '''
 
     with tf.io.gfile.GFile(args.path_rerank_runs, 'w') as f:
         for i, (qid, candidate_passage_list) in enumerate(query_candidates.items()):
             # Using true prob as score, so reverse the order.
-            candidate_passage_list = sorted(candidate_passage_list[:args.topk], key=lambda x: x[1], reverse=True)
+            candidate_passage_list = sorted(candidate_passage_list, key=lambda x: x[1], reverse=True)
             for idx, (docid, true_prob, false_prob) in enumerate(candidate_passage_list):
                 if args.trec:
                     example = '{} Q0 {} {} {} reranking\n'.format(qid, docid, str(idx+1), 1.0/(idx+1))
