@@ -43,7 +43,7 @@ def load_corpus(path, doc_level, candidates):
     collection_dict = collections.defaultdict() 
     title_dict = {}
 
-    if corpus_type == "trecweb":
+    if corpus_type == "trecweb" or corpus_type == "full":
         with open(path, 'r') as f:
             for i, line in enumerate(f):
                 doc_dict = json.loads(line)
@@ -69,7 +69,7 @@ def load_corpus(path, doc_level, candidates):
                     break
 
     # Passage only (document is not yet supported.)
-    if corpus_type == "tsv" or corpus_type == "full"
+    if corpus_type == "tsv": 
         with open(path, 'r') as f:
             for i, line in enumerate(f):
                 docid, doctext = line.strip().split('\t')
