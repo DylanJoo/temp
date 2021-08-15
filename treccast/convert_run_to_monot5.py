@@ -69,7 +69,7 @@ def load_corpus(path, doc_level, candidates):
                     break
 
     # Passage only (document is not yet supported.)
-    if corpus_type == "tsv":
+    if corpus_type == "tsv" or corpus_type == "full"
         with open(path, 'r') as f:
             for i, line in enumerate(f):
                 docid, doctext = line.strip().split('\t')
