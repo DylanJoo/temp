@@ -64,6 +64,9 @@ def rerank_runs(args):
             if i % 100 == 0:
                 print('Re-ranking queries...{}'.format(i))
 
+if tf.io.gfile.exists(args.path_runs) is False:
+  print("Invalid path of run file")
+  exit(0)
 
 convert_logit_to_prob(args)
 print("Score finished")
