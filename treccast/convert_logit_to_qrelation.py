@@ -6,8 +6,6 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-flogits", "--path_false_logit", type=str)
 parser.add_argument("-tlogits", "--path_true_logit", type=str)
-parser.add_argument("-score", "--path_score", type=str)
-parser.add_argument("-qqpair", "--path_queries_autoregressive_pair", type=str)
 parser.add_argument("-query", "--path_queries", type=str)
 parser.add_argument("-runs", "--path_runs", type=str)
 parser.add_argument("-fusion_runs", "--path_fusion_runs", type=str)

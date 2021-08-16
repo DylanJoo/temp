@@ -1,10 +1,11 @@
 import argparse
+import json
 
-args = argparse.ArgumentParser()
+parser = argparse.ArgumentParser()
 parser.add_argument("-lif_json", "--path_lif", type=str)
 parser.add_argument("-lif_tsv", "--path_lif_output", type=str)
 parser.add_argument("-lag", "--n_previous_question", default=1, type=int)
-parser.add_argument("-answer", "--include_answer", action='store_true', default=False)
+parser.add_argument("-answer", "--include_answer", action='store_true', default=True)
 args = parser.parse_args()
 
 
@@ -38,10 +39,11 @@ def convert_lif_to_clf_task(args):
 
             # Context(Q and A) before i
             qa_prev = list()
-            for i, q in enumerate(question_prev):
-                qa_prev.append(q)
+            for i, (q, a) in enumerate(zip(question_prev, answer_prev)):
                 if args.include_answer:
-                    qa_prev.append(answer_prev[i])
+                    qa_prev.append(q+" | "+a['text'])
+                else:
+                    qa_prev.append(q)
 
             qa_prev = " ||| ".join(qa_prev)
 
