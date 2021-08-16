@@ -33,7 +33,7 @@ def convert_logit_to_prob(args):
                 true_prob, false_prob, np.add(true_prob, false_prob)))
 
             if i % 1000000 == 0:
-                print("[Re-ranker Scoring] {} query-passage pair had been scored.".format(i))
+                print("[Re-ranker] {} query-passage pair had been scored.".format(i))
 
 def rerank_runs(args):
 
@@ -62,7 +62,7 @@ def rerank_runs(args):
                 f.write(example)
 
             if i % 100 == 0:
-                print('Re-ranking queries...{}'.format(i))
+                print('[Re-ranker] Ranking passages...{}'.format(i))
 
 if tf.io.gfile.exists(args.path_runs) is False:
   print("Invalid path of run file")
