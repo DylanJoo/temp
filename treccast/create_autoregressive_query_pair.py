@@ -20,9 +20,10 @@ def aggregate_lag_one_query(args):
     queries = load_queries(args.path_queries)
     topic_id = -1
     for topic_id, topic in queries.items():
+        # The first turn in topic would not be estimated the qq relations, since no any query in advance.
+        output.write("_ ||| _ Follow-up:\n")
         for (_, turn_prev), (_, turn_current) in zip(topic, topic[1:]):
             output.write("{} ||| {} Follow-up:\n".format(turn_prev, turn_current))
-        output.write("_ ||| _ Follow-up:\n")
 
 aggregate_lag_one_query(args)
 print("DONE")
