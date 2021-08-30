@@ -81,7 +81,7 @@ def load_corpus(path, doc_level, candidates):
                     # Remove the docuemnt in candidate list
                     candidates.remove(docid)
 
-                if i % 10000 == 0:
+                if i % 100000 == 0:
                     print('Loading collections...{}'.format(i))
                 if len(candidates) == 0:
                     break
