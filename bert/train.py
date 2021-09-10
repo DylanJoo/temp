@@ -4,9 +4,11 @@ from transformers import (
     BertConfig,
     BertModel,
     BertTokenizer,
-    TraininngArguments,
+    TrainingArguments,
     HfArgumentParser
 )
+from xxx.models import xxxSegmentation
+from xxx.trainer import OurTrainer
 
 @dataclass
 class OurModelArguments:
@@ -91,14 +93,18 @@ def main():
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
 
     # [Models] Load models and related configs, and load from pretrained weights
-    configuration = BertConfig() # Load the config of specifi name in model arguments
-    tokenizer = BertTokenizer()
-    model = BertModel(configuration)
-    # Load the weights
-    model.from_pretrained("the_name_of_the_model")
+    tokenizer = BertTokenizer.from_pretrained()
+    configuration = BertConfig.from_pretrained()
+    ## [Models (configuration)]
+    configuration.output_hidden_states = True
+    model = BertModel.from_pretraiend(config=configuration)
 
     # [Data] Load datasets 
     training_dataset=None
+    val_dataset=None
+    
+
+
     # [Trainer] Wrap up the args/models/data and preprocess them into a hug-face trainer
     trainer = OurTrainer(
             model=model, args=training_args, train_dataset=None, eval_data=None

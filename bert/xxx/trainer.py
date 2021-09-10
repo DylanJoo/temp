@@ -14,7 +14,7 @@ from transformers.trainer_utils import (
 )
 
 
-class OurTrainer(Trainer):
+class xxxTrainer(Trainer):
     
     def evaluate(
         self, 
@@ -22,7 +22,7 @@ class OurTrainer(Trainer):
         ignore_keys: Optional[List[str]] = None,
         metric_key_prefix: str = "eval",
         eval_senteval_transfer: bool = False,
-    ) -> Dict[str, float]:
+        ) -> Dict[str, float]:
         pass
 
     def train():
