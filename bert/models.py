@@ -8,7 +8,7 @@ import transformers
 # from transformers.models.bert.modeling_bert import BertPreTrainedModel, BertModel, BertLMPredictionHead
 # from transformers.activations import gelu
 # from transformers.modeling_outputs import SequenceClassifierOutput, BaseModelOutputWithPoolingAndCrossAttentions
-from transformer.modeling_outputs import NextSentencePredictorOutput
+
 from transformer import (
     BertModel, 
     BertForNextSentencePrediction
@@ -33,8 +33,6 @@ class BertForSegmentPrediction(BertPreTrainedModel):
         self.bert = BertModel(config, add_pooling_layer=False)
         # maybe we can customized the output layer of this 
         self.cls = nn.Linear(config.hidden_size, 2)
-        self.init_weights()
-        self.Softmax(dim=-1) # softmax along with last dimension
 
     def forward(self, 
         input_ids=None, 
@@ -79,15 +77,5 @@ class BertForSegmentPrediction(BertPreTrainedModel):
 
        if not return_dict:
            output = (segmentation_logit,) + outputs[2:]
-           return ((segmentation_loss,) + output) \
-                   if segmentation_loss is not None else output
-
-        return NextSentencePredictorOutput(
-                loss=segmentation_loss,
-                logits=segmentation_logit,
-                hidden_states=output.hidden_states,
-                attentions=outputs.attentions)
-    
-    def inference(self, logits):
-        return self.softmax(logits)
+           return ((segmentation
 

@@ -14,7 +14,7 @@ from transformers.trainer_utils import (
 )
 
 
-class OurTrainer(Trainer):
+class xxxTrainer(Trainer):
     
     def evaluate(
         self, 
