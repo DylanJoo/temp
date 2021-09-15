@@ -1,6 +1,12 @@
-from dataset import load_datasets
+import re
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("-file", "--text_file", type=str)
+parser.add_argument("-csv", "--output_to_csv", action="store_true", default=True)
+# parser.add_argument("--balance", "--do_class_balancing")
+args = parser.parse_args()
 
-def convert_text_to_segment_pair(file):
+def convert_text_to_segment_pair(args):
 
     def normalized(strings):
         strings = strings.strip()
@@ -10,7 +16,12 @@ def convert_text_to_segment_pair(file):
         strings = re.sub(r"\s+", " ", strings)
         return strings
 
-    with open(file, 'r') as source, open(file.replace(".txt", ".csv"), 'w') as pair_data:
+    with open(args.text_file, 'r') as source, \
+         open(args.text_file.replace(".txt", ".csv"), 'w') as pair_data:
+
+        if args.output_to_csv:
+            pair_data.write("sentA\tsentB\tlabel\n")
+
         sentences = list()
         t, f = 0, 0
         for i, line in enumerate(source):
@@ -36,41 +47,6 @@ def convert_text_to_segment_pair(file):
             if i == 10000:
                 print("{} line finished. Class dist.: {}, {}".format(i, t, f))
 
-def prepare_features(examples):
 
-    size = len(examples['sentA'])
-
-    assert len(examples['sentA']) == len(examples['sentB']) and size == len(examples['sentA']),\
-     'Invalud number of examples'
-
-    # Debugging
-    for idx in range(size):
-        if examples['sentA'][idx] is None:
-            examples['sentA'][idx] = " "
-        if examples['sentB'][idx] is None:
-            examples['sentB'][idx] = " "
-        if examples['label'][idx] is None:
-            examples['label'][idx] = " "
-
-    sentence_A = examples['sentA']
-    sentence_B = examples['sentB']
-
-    # Tokenized the string to id 
-    sentence_features = tokenizer(
-        sentence_A, sentence_B,
-        max_length=512,
-        truncation=True,
-        padding="max_length"
-    )
-
-    # add the labels in features
-    sentence_features['label'] = examples['label']
-
-    return sentence_features
-
-# train_dataset = dataset_test['train'].map(
-#     function=prepare_features,
-#     batched=True,
-#     remove_columns=['label'],
-#     num_proc=2
-# )
+convert_text_to_segment_pair(args)
+print("DONE")
