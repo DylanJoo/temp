@@ -31,7 +31,7 @@ def convert_text_to_segment_pair(args):
                     pair_data.write("{}\t{}\t{}\n".format(
                         normalized(sentences[0]), 
                         normalized(sentences[1]), "True"))
-                    sentences = list()
+                    sentences = list() # clean up the sentences buffer
                     t += 1
 
             else:
@@ -42,11 +42,10 @@ def convert_text_to_segment_pair(args):
                     sentences.pop(0) # pop the old sentence
                     f += 1
                 
-                sentences.append(line) # append the new one
+                sentences.append(line)
 
             if i == 10000:
                 print("{} line finished. Class dist.: {}, {}".format(i, t, f))
-
 
 convert_text_to_segment_pair(args)
 print("DONE")

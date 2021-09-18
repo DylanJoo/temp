@@ -3,25 +3,18 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.distributed as dist
 import transformers
-# from transformers import RobertaTokenizer
-# from transformers.models.roberta.modeling_roberta import RobertaPreTrainedModel, RobertaModel, RobertaLMHead
-# from transformers.models.bert.modeling_bert import BertPreTrainedModel, BertModel, BertLMPredictionHead
-# from transformers.activations import gelu
-# from transformers.modeling_outputs import SequenceClassifierOutput, BaseModelOutputWithPoolingAndCrossAttentions
 from transformer.modeling_outputs import NextSentencePredictorOutput
 from transformer import (
     BertModel, 
     BertForNextSentencePrediction
 )
 
-from transformers.file_utils import (
-    add_code_sample_docstrings,
-    add_start_docstrings,
-    add_start_docstrings_to_model_forward,
-    replace_return_docstrings,
-)
-
-
+# from transformers.file_utils import (
+#     add_code_sample_docstrings,
+#     add_start_docstrings,
+#     add_start_docstrings_to_model_forward,
+#     replace_return_docstrings,
+# )
 
 class BertForSegmentPrediction(BertPreTrainedModel):
     _keys_to_ignore_on_load_missing = [r"position_ids"]
@@ -30,11 +23,10 @@ class BertForSegmentPrediction(BertPreTrainedModel):
     def __init__(self, config, *model_args, **model_kargs):
         super().__init__(config)
         self.model_args = model_kargs["model_args"]
-        self.bert = BertModel(config, add_pooling_layer=False)
-        # maybe we can customized the output layer of this 
+        self.bert = BertModel(config)
         self.cls = nn.Linear(config.hidden_size, 2)
         self.init_weights()
-        self.Softmax(dim=-1) # softmax along with last dimension
+        self.softmax = nn.Softmax(dim=-1) # softmax along with last dimension
 
     def forward(self, 
         input_ids=None, 
@@ -82,12 +74,21 @@ class BertForSegmentPrediction(BertPreTrainedModel):
            return ((segmentation_loss,) + output) \
                    if segmentation_loss is not None else output
 
+        # TODO: Maybe build a dedicate modeloutput class for sgementation task
         return NextSentencePredictorOutput(
                 loss=segmentation_loss,
                 logits=segmentation_logit,
                 hidden_states=output.hidden_states,
                 attentions=outputs.attentions)
     
-    def inference(self, logits):
-        return self.softmax(logits)
+    def inference(self, inputs, write_to_text_file=None):
+        with torch.no_grad():
+            output = self.forward(inputs)
+            probabilities = self.softmax(output['logits'])
+
+            if write_to_text_file:
+                f=open(write_to_text_file, 'a')
+                f.write(probabilities)
+
+            return probabilities
 
