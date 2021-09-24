@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.distributed as dist
+from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
+
 import transformers
 from transformer.modeling_outputs import NextSentencePredictorOutput
 from transformer import (
@@ -36,7 +38,7 @@ class BertForSegmentPrediction(BertPreTrainedModel):
         head_mask=None,
         inputs_embed=None,
         labels=None,
-        output_attentinos=None,
+        output_attentions=None,
         output_hidden_states=None,
         return_dict=None,
         sent_emb=False,
@@ -44,14 +46,14 @@ class BertForSegmentPrediction(BertPreTrainedModel):
         mlm_labels=None
         ):
 
-        output = self.bert(
+        outputs = self.bert(
             input_ids, 
             attention_mask=attention_mask,
             token_type_ids=token_type_ids,
             position_ids=position_ids,
             head_mask=head_mask,
             inputs_embeds=inputs_embeds,
-            output_attention=output_attentions,
+            output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
@@ -80,15 +82,17 @@ class BertForSegmentPrediction(BertPreTrainedModel):
                 logits=segmentation_logit,
                 hidden_states=output.hidden_states,
                 attentions=outputs.attentions)
-    
-    def inference(self, inputs, write_to_text_file=None):
+
+    def inference(self, **inputs):
+
         with torch.no_grad():
-            output = self.forward(inputs)
+            outputs = self.forward(**inputs)
             probabilities = self.softmax(output['logits'])
+            predictions = torch.argmax(probabilities, dim=-1)
 
-            if write_to_text_file:
-                f=open(write_to_text_file, 'a')
-                f.write(probabilities)
+            return {"probabilities": probabilities,
+                    "predictions": predictions}
 
-            return probabilities
-
+            # if write_to_text_file:
+            #     f=open(write_to_text_file, 'a')
+            #     f.write(probabilities)
