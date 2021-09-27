@@ -42,8 +42,8 @@ def read_esnli_csv(args):
         for index in data['index']:
             sentA = normalized(data['Sentence1'][index], 'sentA')
             sentB = normalized(data['Sentence2'][index], 'sentB')
-            highA = normalized(data['Sentence1'][index], 'sentA')
-            highB = normalized(data['Sentence2'][index], 'sentB')
+            highA = normalized(data['Sentence1_marked_1'][index], 'sentA')
+            highB = normalized(data['Sentence2_marked_1'][index], 'sentB')
             label = normalized(data['gold_label'][index], 'label')
            
             if sentA and sentB: 
