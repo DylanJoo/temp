@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.distributed as dist
+
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 
 import transformers
@@ -20,7 +21,6 @@ from transformer import (
 
 class BertForSegmentPrediction(BertPreTrainedModel):
     _keys_to_ignore_on_load_missing = [r"position_ids"]
-
 
     def __init__(self, config, *model_args, **model_kargs):
         super().__init__(config)

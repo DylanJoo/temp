@@ -7,9 +7,9 @@ from transformers import (
     BertConfig,
     BertModel,
     BertTokenizer,
-    TraininngArguments,
+    TrainingArguments,
     HfArgumentParser
-)
+
 from datasets import load_dataset
 
 @dataclass
@@ -138,6 +138,7 @@ def main():
         OurTrainingArguments
     ))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+
 
     # [Config] Load models and related configs and load from pretrained weights
     config_kwargs = {
