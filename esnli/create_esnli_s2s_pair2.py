@@ -1,3 +1,4 @@
+import os
 import re
 import string
 import argparse
@@ -16,15 +17,21 @@ parser.add_argument("-negative_only", "--negative_only", action="store_true", de
 args = parser.parse_args()
 
 def read_esnli(args):
+    
+    def readlines(filename):
+        f = open(filename, 'r').readlines()
+        data = list(map(lambda x: x.strip(), f))
+        return data
 
     data = collections.OrderedDict()
-    data['sentA'] = open(args.path_esnli_sentenceA, 'r')
-    data['sentB'] = open(args.path_esnli_sentenceB, 'r')
-    data['highlightA'] = open(args.path_esnli_highlightA, 'r')
-    data['highlightB'] = open(args.path_esnli_highlightB, 'r')
-    data['label'] = open(args.path_esnli_labels, 'r')
+    data['sentA'] = readlines(args.path_esnli_sentenceA)
+    data['sentB'] = readlines(args.path_esnli_sentenceB)
+    data['highlightA'] = readlines(args.path_esnli_highlightA)
+    data['highlightB'] = readlines(args.path_esnli_highlightB)
+    data['label'] = readlines(args.path_esnli_labels)
+
     if os.path.exists(args.path_esnli_explanation):
-        data['explanation'] = open(args.path_esnli_explanation, 'r')
+        data['explanation'] =readlines(args.path_esnli_explanation)
 
     # highlight generation (whole sentence or keyphrase)
     if args.target_type == 'highlight_plus':
@@ -61,15 +68,15 @@ def prepare_highlight_plus(sentence, label):
 
     if label == "entailment":
         sentence = sentence.replace("*", "+")
-    elif data_dict['label'] == "neutral":
+    elif label == "neutral":
         sentence = sentence.replace("*", "=")
-    elif data_dict['label'] == "contradiction":
+    elif label == "contradiction":
         sentence = sentence.replace("*", "-")
     return sentence
 
 def remove_positive_highlight(sentence, label):
 
-    if data_dict['label'] != "contradiction":
+    if label != "contradiction":
         sentence = sentence.replace("*", "")
     return sentence
 
