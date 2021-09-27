@@ -13,7 +13,8 @@ parser.add_argument("-highlightB", "--path_esnli_highlightB", default="highlight
 parser.add_argument("-explanation", "--path_esnli_explanation", default="explanation.txt", type=str)
 parser.add_argument("-out", "--path_output", type=str)
 parser.add_argument("-target", "--target_type", type=str)
-parser.add_argument("-negative_only", "--negative_only", action="store_true", default=False)
+parser.add_argument("--negative_only", action="store_true", default=False)
+parser.add_argument("--reverse", action="store_true", default=False)
 args = parser.parse_args()
 
 def read_esnli(args):
@@ -84,7 +85,7 @@ def create_sent_pairs(args):
 
     data = read_esnli(args)
     data_length = len(data['label'])
-    if all(len(features) == len(data['label']) for feature in data.values()) is False:
+    if all(len(features) == len(data['label']) for features in data.values()) is False:
         print("Inconsist length of data in the dictionary")
         exit(0)
 
