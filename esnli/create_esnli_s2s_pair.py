@@ -1,99 +1,124 @@
+import os
+import re
+import string
 import argparse
 import collections
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-premise", "--path_esnli_premise", default="s1.train", type=str)
-parser.add_argument("-hypothesis", "--path_esnli_hypothesis", default="s2.train", type=str)
-parser.add_argument("-label", "--path_esnli_labels", default="UNK_freq_15_preproc1_expl_1_label.train", type=str)
-parser.add_argument("-highlight", "--path_esnli_highlight", default="highlight_and_extract.tsv", type=str)
+parser.add_argument("-sentA", "--path_esnli_sentenceA", default="sentenceA.txt", type=str)
+parser.add_argument("-sentB", "--path_esnli_sentenceB", default="sentenceB.txt", type=str)
+parser.add_argument("-label", "--path_esnli_labels", default="label.txt", type=str)
+parser.add_argument("-highlightA", "--path_esnli_highlightA", default="highlightA.txt", type=str)
+parser.add_argument("-highlightB", "--path_esnli_highlightB", default="highlightB.txt", type=str)
+parser.add_argument("-explanation", "--path_esnli_explanation", default="explanation.txt", type=str)
 parser.add_argument("-out", "--path_output", type=str)
-parser.add_argument("-type", "--target_type", type=str)
+parser.add_argument("-target", "--target_type", type=str)
+parser.add_argument("--negative_only", action="store_true", default=False)
+parser.add_argument("--reverse", action="store_true", default=False)
 args = parser.parse_args()
 
+def read_esnli(args):
+    
+    def readlines(filename):
+        f = open(filename, 'r').readlines()
+        data = list(map(lambda x: x.strip(), f))
+        return data
 
-def convert_label_to_dict(args):
+    data = collections.OrderedDict()
+    data['sentA'] = readlines(args.path_esnli_sentenceA)
+    data['sentB'] = readlines(args.path_esnli_sentenceB)
+    data['highlightA'] = readlines(args.path_esnli_highlightA)
+    data['highlightB'] = readlines(args.path_esnli_highlightB)
+    data['label'] = readlines(args.path_esnli_labels)
 
-    data = open(args.path_esnli_labels, 'r')
-    targets = collections.OrderedDict()
+    if os.path.exists(args.path_esnli_explanation):
+        data['explanation'] =readlines(args.path_esnli_explanation)
 
-    for i, line in enumerate(data):
-        if len(line.strip().split(" ", 1)) != 2:
-            label = line.strip()
-            explanation = "No explanation."
-        else:
-            label, explanation = line.strip().split(' ', 1)
-        targets[i] = {"label": label, "explanation": explanation}
+    # highlight generation (whole sentence or keyphrase)
+    if args.target_type == 'highlight_plus':
+        data['highlightA'] = list(map(prepare_highlight_plus, data['highlightA'], data['label']))
+        data['highlightB'] = list(map(prepare_highlight_plus, data['highlightB'], data['label']))
+    elif args.target_type == 'extraction':
+        data['highlightA'] = list(map(extract_marked_token, data['highlightA']))
+        data['highlightB'] = list(map(extract_marked_token, data['highlightB']))
 
-    print("Total number of targets: {}".format(len(targets)))
-    return targets
+    # example filtering 
+    if args.negative_only:
+        data['highlightA'] = list(map(remove_positive_highlight, data['highlightA'], data['label']))
+        data['highlightB'] = list(map(remove_positive_highlight, data['highlightB'], data['label']))
 
-def convert_highlight_to_dict(args):
+    return data
 
-    data = open(args.path_esnli_highlight, 'r')
-    highlight = collections.OrderedDict()
+def extract_marked_token(sentence): 
+    sentence = sentence.strip()
+    token_list = []
+    p_highlight = re.compile(r"[\*].*?[\*]")
+    p_punct = re.compile("[" + re.escape(string.punctuation) + "]")
+    findings = p_highlight.findall(sentence)
 
-    for i, line in enumerate(data):
-        highlight_p, highlight_h, extract_p, extract_h = line.strip().split('\t')
-        highlight[i] = {
-                "highlight_hypothesis": highlight_h, "highlight_premise": highlight_p, 
-                "extract_hypothesis": extract_h, "extract_premise": extract_p}
+    for token in findings:
+        token = p_punct.sub("", token)
+        token_list += [token]
 
-    print("Total number of targets: {}".format(len(highlight)))
-    return highlight
+    if len(token_list) == 0:
+        return "None"
+    else:
+        return " ||| ".join(token_list)
 
-def preprocess_highlight_plus(highlight_dict, label):
+def prepare_highlight_plus(sentence, label):
+
     if label == "entailment":
-        highlight_dict['highlight_hypothesis'] = highlight_dict['highlight_hypothesis'].replace("*", "+")
-        highlight_dict['highlight_premise'] = highlight_dict['highlight_premise'].replace("*", "+")
+        sentence = sentence.replace("*", "+")
     elif label == "neutral":
-        highlight_dict['highlight_hypothesis'] = highlight_dict['highlight_hypothesis'].replace("*", "=")
-        highlight_dict['highlight_premise'] = highlight_dict['highlight_premise'].replace("*", "=")
+        sentence = sentence.replace("*", "=")
     elif label == "contradiction":
-        highlight_dict['highlight_hypothesis'] = highlight_dict['highlight_hypothesis'].replace("*", "-")
-        highlight_dict['highlight_premise'] = highlight_dict['highlight_premise'].replace("*", "-")
+        sentence = sentence.replace("*", "-")
+    return sentence
+
+def remove_positive_highlight(sentence, label):
+
+    if label != "contradiction":
+        sentence = sentence.replace("*", "")
+    return sentence
 
 def create_sent_pairs(args):
 
-    targets = convert_label_to_dict(args)
-    highlight = convert_highlight_to_dict(args)
+    data = read_esnli(args)
+    data_length = len(data['label'])
+    if all(len(features) == len(data['label']) for features in data.values()) is False:
+        print("Inconsist length of data in the dictionary")
+        exit(0)
+
     output = open(args.path_output, 'w')
 
-    with open(args.path_esnli_premise) as premise, open(args.path_esnli_hypothesis) as hypothesis:
-        for i, (line_p, line_h) in enumerate(zip(premise, hypothesis)):
+    # ESNLI provides several type of way to learn with supervised.
+    for idx in range(data_length):
+        # 1) Naive NLI supervised task
+        if args.target_type == "clf":
+            example = "Hypothesis: {} Premise: {} Relation:\t{}\n".format(
+                    data['sentA'][idx], data['sentB'][idx], 
+                    data['label'][idx])
+        elif args.target_type == "expl":
+            example = "Hypothesis: {} Premise: {} Relation:\t{}\n".format(
+                    data['sentA'][idx], data['sentB'][idx], 
+                    data['explanation'][idx])
+        elif args.target_type == "clf_expl":
+            example = "Hypothesis: {} Premise: {} Relation:\t{} ||| {}\n".format(
+                    data['sentA'][idx], data['sentB'][idx], 
+                    data['label'][idx], data['explanation'][idx])
 
-            text_p = line_p.strip()
-            text_h = line_h.strip()
-            
-            # ESNLI provides several type of way to learn with supervised.
-            # 1) Explanation
-            if args.target_type == "explanation":
-                example_esnli = "Hypothesis: {} Premise: {} Relation:\t{}\n".format(
-                        text_h, text_p, targets[i]['explanation'].strip())
-            elif args.target_type == "label":
-                example_esnli = "Hypothesis: {} Premise: {} Relation:\t{}\n".format(
-                        text_h, text_p, targets[i]['label'].strip())
-            elif args.target_type == "label_explanation":
-                example_esnli = "Hypothesis: {} Premise: {} Relation:\t{} ||| {}\n".format(
-                        text_h, text_p, label, targets[i]['explanation'].strip())
+        # 2) Highlighter supervised task
+        if args.target_type == "highlight":
+            example = "Sentence1: {} Sentence2: {} Highlight:\t{}\n".format(
+                    data['sentA'][idx], data['sentB'][idx],
+                    data['highlightB'][idx])
 
-            # 2) Highlights
-            if args.target_type == "highlight":
-                example_esnli = "Hypothesis: {} Premise: {} Highlight:\tHypothesis: {} Premise: {}\n".format(
-                        text_h, text_p,
-                        highlight[i]['highlight_hypothesis'], highlight[i]['highlight_premise'])
+            if args.reverse:
+                example += "Sentence1: {} Sentence2: {} Highlight:\t{}\n".format(
+                        data['sentB'][idx], data['sentA'][idx],
+                        data['highlightA'][idx])
 
-            if args.target_type == "highlight+":
-                preprocess_highlight_plus(highlight[i], targets[i]['label'].strip())
-                example_esnli = "Hypothesis: {} Premise: {} Highlight:\tHypothesis: {} Premise: {}\n".format(
-                        text_h, text_p,
-                        highlight[i]['highlight_hypothesis'], highlight[i]['highlight_premise'])
-
-            elif args.target_type == "highlight_extraction":
-                example_esnli = "Hypothesis: {} Premise: {} Highlight:\tHypothesis: {} Premise: {}\n".format(
-                        text_h, text_p,
-                        highlight[i]['extract_hypothesis'], highlight[i]['extract_premise'])
-
-            output.write(example_esnli)
+        output.write(example)
 
 
 create_sent_pairs(args)
