@@ -5,13 +5,12 @@ which are ready to be explained.
 import collections
 import spacy
 import sklearn.metrics
+from utils import reformulation
 
 nlp = spacy.load("en_core_web_sm")
 
 class TextInstance:
-    """Packing the text features and the related perturbed instances
-    [TODO] Implement the add function of TextInstance..
-    """
+    """Packing the text features and the related perturbed instances """
 
     def __init__(self,
                  raw_string=None,
@@ -31,16 +30,18 @@ class TextInstance:
 
         # The original sentence 
         self.original = collections.OrderedDict(
-                {'sentA': self.raw[0], 'sentB': None if not self.pairwise else self.raw[1]}
+                {'sentA': self.raw[0], 'sentB': [] if not self.pairwise else self.raw[1]}
         )
 
         # The potential token to be replaced as perturbed data. (labeled True)
         self.split = collections.OrderedDict({'sentA': [], 'sentB': []})
         self.isfeature = collections.OrderedDict({'sentA': [], 'sentB': []})
+        self.sent_sep = None
         self.num_features = collections.defaultdict(int)
         self._get_features()
 
         # The perturbing 
+        # [TODO] perturbed_data is using binary vector. (invalid token included)
         self.perturbed_method = perturbed_method
         self.perturbed = collections.OrderedDict(
                 {'sentA': self.original['sentA'], 'sentB': [self.original['sentB']]}
@@ -58,6 +59,7 @@ class TextInstance:
             if token.whitespace_:
                 self.split['sentA'].append(" ")
                 self.isfeature['sentA'].append(False)
+            self.sent_sep = [1] * len(self.split['sentA'])
 
         if self.pairwise:  # Append the second sentence
             for token in nlp(self.raw[1]):
@@ -66,6 +68,7 @@ class TextInstance:
                 if token.whitespace_:
                     self.split['sentB'].append(" ")
                     self.isfeature['sentB'].append(False)
+            self.sent_sep = [0] * len(self.split['sentA']) + [1] * len(self.split['sentB'])
 
         if ignore == 'sentA':
             self.isfeature['sentA'] = [False] * len(self.isfeature['sentA'])
@@ -81,7 +84,10 @@ class TextInstance:
         """Returns the length of valid features (tokens) of the sents."""
         return sum(self.num_features.values())
 
-    def perturbed_data_generation(self, num_samples, perturbed_method='mask'):
+    def perturbed_data_generation(self,
+                                  num_samples,
+                                  distance_metirc='cosine',
+                                  perturbed_method='mask'):
         """Based on the given raw text, generate N perturbed examples.
         and the corresponding sparse representation.
 
@@ -90,29 +96,23 @@ class TextInstance:
             perturbed_method: the neighborhood data generation process (for data-augmentation)
             - mask: Replace the selected token by [MASK].
 
-        [TBC]
-            In the paired scenario, I choose to perturb the sentB only (fixed the sentA).
+        Sub-functions:
+            reformulation: returns the masked perturbing result of focal text.
+            distances_fn: return the distances b/w samples and original on sparse representation
+
         Returns:
             A tuple (perturbed, peturbed_data), where: 
             perturbed: The N random pertrubing sentences.
             perturbed_data: The Bag-of-word representation of N perturbed sample.
+
+        [TBC]
+            In the paired scenario, I choose to perturb the sentB only (fixed the sentA).
         """
 
-        def reformulation(tokens, sub_index, start=0, sub_method='bert'):
-            """Returns the masked perturbing result of focal text.
-            """
-            tokens = np.array(tokens)
-            if start == 0:
-                # start from sentA(0), index from 0 to sentA's length.
-                sub_index = sub_index[sub_index < len(tokens)]
-            else:
-                # start from sentB, index from sentA'length to the last.
-                sub_index = sub_index[sub_index >= start] - start
-            tokens[sub_index] = '[MASK]'
-            return "".join(tokens)
-        
+        # def reformulation(tokens, sub_index, start=0, sub_method='bert'):
+        #     pass
+
         def distances_fn(x):
-            """Return the distances between samples and original on sparse representation."""
             return sklearn.metrics.pairwise_distance(
                     x, x[0], metric=distance_metric).ravel() * 100
 
@@ -126,7 +126,9 @@ class TextInstance:
 
         for i_example, num_perturbed in enumerate(num_perturbed_sample, start=1):
             # perturbed 2: select "which" tokens should be perturbed in each example
-            perturbed_idx = np.random.choice(perturbed_idx_candidates, num_perturbed, replace=False)
+            perturbed_idx = np.random.choice(perturbed_idx_candidates, 
+                                             num_perturbed, 
+                                             replace=False)
             self.perturbed_data[i_example, perturbed_idx] = 0
 
             self.perturbed['sentA'].append(reformulation(self.split['sentA'], perturbed_idx))
@@ -136,14 +138,7 @@ class TextInstance:
 
         self.perturbed_distances = distances_fn(self.perturbed_data)
         # return self.pertrubed, self.perturbed_data, self.perturbed_distances
-        print('{} pertrubing examples finished:'.format(num_samples)) 
-
-    def set_perturbed_labels(self, labels):
-        """set the labels output of f(Z)"""
-        assert len(labels) != self.perturbed_data.shape[0], \
-                'Inconsist predictions and perturbed exmaples'
-        self.perturbed_labels = np.array(labels)
-        
+        print('{} pertrubing examples finished:'.format(num_samples))  
 
 
 

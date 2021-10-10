@@ -11,12 +11,16 @@ class PerturbedDataset:
     Args:
         data: the TextInstance to be transformed.
         tokenizer: the PretrainedTokenizer tailored for the model.
+
+    [TODO]
+        - Besides the huggingface dataset tokenizer, set the bow tokenizer
     """
 
-    def __init__(self, text_instance, tokenizer):
+    def __init__(self, text_instance, tokenizer, bow=False):
         self.data = collection.defaultdict(list)
         self.add_from_instance(text_instance)  # add data_dict
         self.tokenizer = tokenizer
+        self.bow = bow # indicate that's embedding layers
     
     def __post_init__(self):
         """Check the dataset correctedness and load into huggingface dataset.
@@ -40,7 +44,7 @@ class PerturbedDataset:
     def get_dataset(self):
         """Return the preprocessed/tokenized dataset, which device is cuda"""
 
-        def prepare_feature(x):
+       def prepare_feature(x):
             if len(x) > 1:
                 return self.tokenizer(x['sentA'], x['sentB'], padding=True)
             else:
@@ -48,7 +52,7 @@ class PerturbedDataset:
 
         preprocessed_dataset = self.dataset.map(
                 function=prepare_feature,
-                remove_columns=self.data.keys(),
+                remove_columns=self.dataset.column_names,
                 batched=True
         )
         preprocessed_data.set_format('torch', device='cuda:0')
