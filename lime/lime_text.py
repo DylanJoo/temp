@@ -13,8 +13,9 @@ import json
 import re
 import numpy as np 
 
-from utils import batch_iteri, flatten_listOflist
+from utils import batch_iter, flatten_listOflist
 from models import SimpleLinearRegression
+from hf_trainer import HuggingfaceTrainer
 from text_instance import TextInstance
 from explanation_instance import ExplanationInstance
 
@@ -114,8 +115,7 @@ class LimeBase(object):
             current_mask = np.zeros(data.shape[1], dtype=bool) if init_mask is None else ~init_mask
             model_fs = Ridge(alpha=0, fit_intercept=True, random_state=self.random_state)
 
-            n_iterations = num_features if method == 'forward'
-            n_iterations = data.shape[1] - num_features if method == 'backward' 
+            n_iterations = num_features if method == 'forward' else data.shape[1] - num_features 
 
             for _iter in n_iterations:
                 selected = self._get_new_feature(
@@ -163,7 +163,6 @@ class LimeBase(object):
         label_probabilities = neighborhood_labels[:, label]
 
         # (pre-fit) feature selection
-        coefficients = np.zeros(
         used_features_idx = self.feature_selection(neighborhood_data,
                                                    neighborhood_labels,
                                                    weights,
@@ -233,7 +232,7 @@ class LimeTextExplainer(object):
         self.char_level = char_level
 
         # to be build
-        self.label_probs = np.empty((0, len(class_names))
+        self.label_probs = np.empty((0, len(class_names)))
         self.text_instance = None
 
     def set_classifier(self, trainer: Optional[HuggingfaceTrainer] = None):
@@ -293,14 +292,14 @@ class LimeTextExplainer(object):
         # Step 2: Note that it's the 2-way probabilties
         for batch in batch_iter(perturbed_dataset):
             output = self.model.inference(**batch)
-            self.label_probs = np.vstack((self.label_probs, output['probabilities'].numpy())
+            self.label_probs = np.vstack((self.label_probs, output['probabilities'].numpy()))
 
         # step 3-
         explanation_instance = ExplanationInstance(
             class_names=self.class_names,
             token_repr=flatten_listOflist(self.text_instance.split), 
             binary_repr=flatten_listOflist(self.text_instance.isfeature),
-            seperate_repr=self.text_instance.sent_sep
+            seperate_repr=self.text_instance.sent_sep,
             random_state=self.random_state
         )
 

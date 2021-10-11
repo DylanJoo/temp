@@ -43,8 +43,7 @@ class PerturbedDataset:
 
     def get_dataset(self):
         """Return the preprocessed/tokenized dataset, which device is cuda"""
-
-       def prepare_feature(x):
+        def prepare_feature(x):
             if len(x) > 1:
                 return self.tokenizer(x['sentA'], x['sentB'], padding=True)
             else:

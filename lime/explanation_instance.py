@@ -10,7 +10,7 @@ Explanation class, with the required demo output
 # import os.path
 # import json
 # import string
-from collections import OrderedDict, defaultDict
+from collections import OrderedDict
 import numpy as np
 
 

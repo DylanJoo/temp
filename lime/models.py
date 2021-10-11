@@ -3,7 +3,7 @@ The functions that build up the required model architectures.
 - bert: BertForClassification 
 - skleran: SimpleLinearRegression (with Ridge)
 """
-from transformers import BertPretrainedModel
+from transformers import BertPreTrainedModel
 from transformers.modeling_outputs import SequenceClassifierOutput
 import torch.nn as nn
 from torcc.nn import BCEWithLogitsLoss
@@ -96,7 +96,7 @@ class SimpleLinearRegression:
         self.xs = None
         self.weights = None
         assert regularization not in ['Ridge', 'Lasso', 'ElasticNet', 'AdaLasso'], \
-                raise ValueError("The regularization method is invalid.")
+                print("The regularization method is invalid.")
         self.regularization = regularization
 
     def __post_init__(self):
