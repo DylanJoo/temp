@@ -4,6 +4,7 @@ which are ready to be explained.
 """
 import collections
 import spacy
+import numpy as np
 import sklearn.metrics
 from utils import reformulation
 
@@ -30,7 +31,7 @@ class TextInstance:
 
         # The original sentence 
         self.original = collections.OrderedDict(
-                {'sentA': self.raw[0], 'sentB': [] if not self.pairwise else self.raw[1]}
+                {'sentA': self.raw[0], 'sentB': self.raw[1] if self.pairwise else []}
         )
 
         # The potential token to be replaced as perturbed data. (labeled True)
@@ -44,7 +45,7 @@ class TextInstance:
         # [TODO] perturbed_data is using binary vector. (invalid token included)
         self.perturbed_method = perturbed_method
         self.perturbed = collections.OrderedDict(
-                {'sentA': self.original['sentA'], 'sentB': [self.original['sentB']]}
+                {'sentA': [self.original['sentA']], 'sentB': [self.original['sentB']]}
         )
         self.perturbed_data = np.array([self.isfeature['sentA'] + 
                                         self.isfeature['sentB']]).astype(int)
@@ -70,7 +71,7 @@ class TextInstance:
                     self.isfeature['sentB'].append(False)
             self.sent_sep = [0] * len(self.split['sentA']) + [1] * len(self.split['sentB'])
 
-        if ignore == 'sentA':
+        if (ignore == 'sentA') and (self.pairwise):
             self.isfeature['sentA'] = [False] * len(self.isfeature['sentA'])
 
         self.num_features['sentA'] = sum(self.isfeature['sentA'])
@@ -86,7 +87,7 @@ class TextInstance:
 
     def perturbed_data_generation(self,
                                   num_samples,
-                                  distance_metirc='cosine',
+                                  distance_metric='cosine',
                                   perturbed_method='mask'):
         """Based on the given raw text, generate N perturbed examples.
         and the corresponding sparse representation.
@@ -109,19 +110,16 @@ class TextInstance:
             In the paired scenario, I choose to perturb the sentB only (fixed the sentA).
         """
 
-        # def reformulation(tokens, sub_index, start=0, sub_method='bert'):
-        #     pass
-
         def distances_fn(x):
-            return sklearn.metrics.pairwise_distance(
-                    x, x[0], metric=distance_metric).ravel() * 100
+            return sklearn.metrics.pairwise_distances(
+                    x, x[:1, :], metric=distance_metric).ravel() * 100
 
         # perturbed 0: Copy the first row (original) to the text instance.
         self.perturbed_data = np.repeat(self.perturbed_data, repeats=num_samples + 1, axis=0)
 
         # perturbed 1: Generate "How many" token should be masked? of each example
         np.random.seed(1234) 
-        num_perturbed_sample = np.random.randint(1, self.num_features(), num_samples - 1)
+        num_perturbed_sample = np.random.randint(1, self.get_num_features(), num_samples)
         perturbed_idx_candidates = np.where(self.isfeature['sentA'] + self.isfeature['sentB'])[0]
 
         for i_example, num_perturbed in enumerate(num_perturbed_sample, start=1):
@@ -138,7 +136,6 @@ class TextInstance:
 
         self.perturbed_distances = distances_fn(self.perturbed_data)
         # return self.pertrubed, self.perturbed_data, self.perturbed_distances
-        print('{} pertrubing examples finished:'.format(num_samples))  
 
 
 

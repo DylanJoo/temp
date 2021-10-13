@@ -4,12 +4,6 @@ Explanation class, with the required demo output
 - writing output (csv file or text file)
 - visualization (bar plot of each)
 """
-
-# from io import open
-# import os
-# import os.path
-# import json
-# import string
 from collections import OrderedDict
 import numpy as np
 
@@ -37,49 +31,51 @@ class ExplanationInstance:
         """
         self.random_state = random_state
         self.mode = mode
+        self.class_names = class_names
 
         # The text information
-        self.token_repr = token_repr
+        self.token_repr = np.array(token_repr, dtype=object)
         self.binary_repr = binary_repr
         self.seperate_repr = seperate_repr
 
         # The local explanation results
         self.intercept = OrderedDict()
         self.coefficients = OrderedDict()
-        self.score = OrderdDict()
-        self.local_pred = {}
+        self.scores = OrderedDict()
+        self.prediction = {}
 
-        if mode == 'classification':
-            self.class_names = class_names
-            self.top_labels = None
-            self.predict_proba = None
-        elif mode == 'regression':
-            self.class_names = ['negative', 'positive']
-            self.predicted_value = None
-            self.min_value = 0.0
-            self.max_value = 1.0
-            self.dummy_label = 1
-        else:
-            raise ValueError('Invalid explanation mode "{}"'.format(mode))
+        # if mode == 'classification':
+        #     self.class_names = class_names
+        #     self.top_labels = None
+        #     self.predict_proba = None
+        # elif mode == 'regression':
+        #     self.class_names = ['negative', 'positive']
+        #     self.predicted_value = None
+        #     self.min_value = 0.0
+        #     self.max_value = 1.0
+        #     self.dummy_label = 1
+        # else:
+        #     raise ValueError('Invalid explanation mode "{}"'.format(mode))
 
     def set_exp(self, tgt_lbl, exp_dict):
         """Function that process the explained coefficnet weights, 
         and apply them on the original splitted tokens."""
 
-        assert tgt_lbl >= len(self.class_names), \
-                'Incorrect label index.\nThe available classes: {}'.format("; ".join(class_names))
-        targeted_name = self.names[tgt_lbl]
+        assert tgt_lbl < len(self.class_names), \
+                'Incorrect label, available classes: {}'.format("; ".join(self.class_names))
+
+        targeted_name = self.class_names[tgt_lbl]
 
         self.intercept[targeted_name] = exp_dict['intercept']
         self.coefficients[targeted_name] = exp_dict['coefficients']
-        self.score[targeted_name] = exp_dict['score']
+        self.scores[targeted_name] = exp_dict['scores']
         self.prediction[targeted_name] = exp_dict['prediction']
 
     def get_exp_list(self, topk):
         """Returns the explanation as a list."""
         ans = OrderedDict()
-        for c in self.coefficients:
-            topk_idx = np.argsort(np.argsort(self.coefficients[c]))[::-1][:topk]
-            ans[c] = zip(self.token_repr[topk_idx], self.coefficients[c])
+        for c in self.coefficients.keys():
+            topk_indices = np.argsort(np.abs(self.coefficients[c]))[::-1][:topk]
+            ans[c] = list(zip(self.token_repr[topk_indices], self.coefficients[c][topk_indices]))
          
         return ans

@@ -24,12 +24,20 @@ class HuggingfaceTrainer(Trainer):
     """
 
     def __post_init__(self):
+        """
+        Set the default model (f) setting: model, tokenizer
+        """
+        self._set_model(arg.model_name_or_path)
+        self.tokenizer
+
         if self.args.do_train:
+            # self.set_dataset()
             with open("config/training.config", 'a') as f:
                 f.write(json.dumps(self.args))
                 f.write("\n\n")
 
-    def set_dataset(self, name):
+    def _set_dataset(self, name):
+        """[TODO] the dataet should be preprocessed and tokenized"""
         datasets = load_dataset(name)
         self.train_dataset = datasets['train']
         self.eval_dataset = datasets['validation']

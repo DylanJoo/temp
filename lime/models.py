@@ -1,14 +1,37 @@
 """
 The functions that build up the required model architectures.
-- bert: BertForClassification 
+- bert: BertForSequebceClassification 
 - skleran: SimpleLinearRegression (with Ridge)
 """
-from transformers import BertPreTrainedModel
+from transformers import (
+        AutoTokenizer, 
+        AutoModel,
+        AutoModelForSequenceClassification,
+        BertPreTrainedModel
+)
 from transformers.modeling_outputs import SequenceClassifierOutput
 import torch.nn as nn
-from torcc.nn import BCEWithLogitsLoss
+from torch.nn import BCEWithLogitsLoss
 
 from sklearn.linear_model import Ridge, Lasso, ElasticNet
+  
+def get_model(model_name_or_path):
+    if model_name_or_path is None:
+        # model_name_or_path = "sentence-transformers/stsb-bert-base"
+        model_name_or_path = "textattack/bert-base-uncased-SST-2"
+        # model_name_or_path = "deepset/sentence_bert"
+        # model_name_or_path = "textattack/bert-base-uncased-snli"
+        # model_name_or_path = "bert-base-uncased"
+    return AutoModelForSequenceClassification.from_pretrained(model_name_or_path)
+
+def get_tokenizer(tokenizer_name):
+    if tokenizer_name is None:
+        # tokenizer_name = "sentence-transformers/stsb-bert-base"
+        # tokenizer_name = "deepset/sentence_bert"
+        tokenizer_name = "textattack/bert-base-uncased-SST-2"
+        # tokenizer_name = "textattack/bert-base-uncased-snli"
+        # tokenizer_name = "bert-base-uncased"
+    return AutoTokenizer.from_pretrained(tokenizer_name)
 
 class BertForSequenceClassification(BertPreTrainedModel):
     """Using the BERT's [CLS] token as the classification criteria. """
