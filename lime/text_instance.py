@@ -136,6 +136,3 @@ class TextInstance:
 
         self.perturbed_distances = distances_fn(self.perturbed_data)
         # return self.pertrubed, self.perturbed_data, self.perturbed_distances
-
-
-
