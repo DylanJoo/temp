@@ -48,32 +48,34 @@ class lime_ModelArguments:
 parser = HfArgumentParser((lime_ModelArguments, lime_TrainingArguments))
 model_args, training_args = parser.parse_args_into_dataclasses()
 
+# Binary sentiment classification
+SENT_A='This was the worst restaurant I have ever had the misfortune of eating at.'
+
+# lime_001 = LimeTextExplainer(class_names = ['negative', 'positive'])
+# lime_001.set_trainer(model_args=model_args, training_args=training_args)
+# lime_001.explaination = lime_001.explain_instance(
+#         raw_string = [SENT_A], 
+#         labels=(0, 1), 
+#         max_num_features=None,
+#         num_samples=5000
+# )
+SENT_A='A black race car starts up in front of a crowd of people.'
+SENT_B='A man is driving down a lonely road.'
+
 # SENT_A='As of September 24, 2016 ,' + \
 #       ' the Company had approximately 116,000 full-time equivalent employees.'
 # SENT_B='As of September 30, 2017 ,' + \
 #       ' the Company had approximately 123,000 full-time equivalent employees.'
 
-# Binary sentiment classification
-SENT_A='This was the worst restaurant I have ever had the misfortune of eating at.'
-
-lime_001 = LimeTextExplainer(class_names = ['negative', 'positive'])
-lime_001.set_trainer(model_args=model_args, training_args=training_args)
-lime_001.explaination = lime_001.explain_instance(
-        raw_string = [SENT_A], 
-        labels=(0, 1), 
+lime_002 = LimeTextExplainer(class_names = ['entailment', 'neutral', 'contradiction'])
+lime_002.set_trainer(model_args=model_args, training_args=training_args)
+lime_002.explaination = lime_002.explain_instance(
+        raw_string = [SENT_A, SENT_B], 
+        labels=(0, 1, 2), 
         max_num_features=None,
-        num_samples=1000
+        num_samples=5000
 )
-
-# lime_002 = LimeTextExplainer(class_names = ['entailment', 'neutral', 'contradiction'])
-# lime_002.set_trainer(model_args=model_args, training_args=training_args)
-# lime_002.explaination = lime_002.explain_instance(
-#         raw_string = [SENT_A, SENT_B], 
-#         labels=(0, 1, 2), 
-#         max_num_features=None,
-#         num_samples=1000
-# )
-
+#
 
 # Deprecated: No need the data training arugment, since we are not using the new task for finetuning
 # @dataclass
