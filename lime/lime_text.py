@@ -184,7 +184,7 @@ class LimeBase(object):
                                                    feature_mask)
         # (post-fit) predicting probabilties
         if model_g_option is None:
-            model_g = Ridge(alpha=1, fit_intercept=False, random_state=self.random_state)
+            model_g = Ridge(alpha=0, fit_intercept=False, random_state=self.random_state)
         else:
             model_g = model_regressor
 
@@ -216,7 +216,7 @@ class LimeBase(object):
                 'scores': local_fitness, 
                 'prediction': local_pred}
 
-class LimeTextExplainer(object):
+class imeTextExplainer(object):
 
     def __init__(self,
                  kernel_width=25,
