@@ -1,0 +1,40 @@
+The perturbed instance:
+
+- sentences
+example:
+['This was the worst restaurant I have ever had the misfortune of eating at.', '[MASK] was the [MASK] [MASK] I have [MASK] had the misfortune of eating at.', '[MASK] [MASK] [MASK] [MASK] [MASK] I have ever had the misfortune [MASK] eating [MASK].', 'This was [MASK] worst restaurant [MASK] [MASK] [MASK] had the misfortune [MASK] [MASK] at.', '[MASK] was [MASK] [MASK] [MASK] [MASK] [MASK] [MASK] [MASK] [MASK] [MASK] [MASK] [MASK] [MASK].'] 
+
+[[]] 
+
+- distances
+shape: (5001,)
+example:
+[ 0.         15.48457453 29.28932188 24.4071054  73.27387581] 
+
+- explainable repr.
+shape: (5001, 28)
+example:
+[[1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0]
+ [0 0 1 0 1 0 0 0 0 0 1 0 1 0 0 0 1 0 1 0 1 0 1 0 1 0 1 0]
+ [0 0 0 0 0 0 0 0 0 0 1 0 1 0 1 0 1 0 1 0 1 0 0 0 1 0 0 0]
+ [1 0 1 0 0 0 1 0 1 0 0 0 0 0 0 0 1 0 1 0 1 0 0 0 0 0 1 0]
+ [0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]] 
+
+- The maximum number of features: None
+- probs (predicted by logits (by bert repr.))
+shape: (5001, 2)
+example:
+[[0.99899799 0.00100205]
+ [0.33778492 0.66221505]
+ [0.92923206 0.07076793]
+ [0.99883133 0.00116868]
+ [0.50305229 0.49694771]] 
+
+- token features (estimated by model g)
+example:
+class: negative
+[('worst', 0.5007703655231229), ('misfortune', 0.21251740455213072), ('This', 0.07006955274940131), ('the', 0.06135528904667459), ('eating', 0.05771587371102066), ('of', 0.05761329480367195), ('I', 0.0447519271009715), ('had', 0.04217389033889317), ('have', 0.04061381455651998), ('at', 0.02591583462787486), ('restaurant', 0.023547831469246), ('ever', 0.019023075783245705), ('was', 0.01794238978178625), ('the', 0.01707548083314401), (' ', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0), ('.', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0)] 
+
+class: positive
+[('worst', -0.39799201879893803), ('misfortune', -0.11848145288605945), ('the', 0.08456322616196575), ('at', 0.07849881472765845), ('restaurant', 0.07678225564682174), ('was', 0.07171986277618171), ('ever', 0.05999484509888284), ('had', 0.05833604058500764), ('I', 0.05539074315068661), ('have', 0.04805284147344306), ('This', 0.04144996776375772), ('of', 0.04080167603584071), ('the', 0.034444847843124564), ('eating', 0.030626076757893732), (' ', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0), ('.', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0), (' ', 0.0)] 
+

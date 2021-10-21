@@ -216,7 +216,7 @@ class LimeBase(object):
                 'scores': local_fitness, 
                 'prediction': local_pred}
 
-class imeTextExplainer(object):
+class LimeTextExplainer(object):
 
     def __init__(self,
                  kernel_width=25,
