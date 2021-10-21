@@ -1,0 +1,30 @@
+ # GCP configuration
+in GCP, open the access of TPU to bucket.
+## Add the environment path to your home.
+export PATH=$PATH:/home/cfdaclip_001/.local/bin
+## Install mesh_tensorflow
+pip3 install mesh-tensorflow==0.1.17
+pip3 install t5[gcp]==0.7.1
+pip3 install tensorflow==2.3.0
+pip3 install tensorflow-text==2.3.0 
+
+# Modified mesh-tensorflow's code
+# Path: ~/.local/lib/python3.7/site-packages/...
+## /mesh_tensorflow/utils.py
+'''Change the digit dtype'''
+
+## /mesh_tensorflow/layers.py
+'''Change the logit output looks'''
+Ouput the logit only the first output token | true: 1176 index | false: 6136 index
+def modified_softmax_cross_entropy_with_logits(logits, targets, vocab_dim, z_loss=0.0):
+    ...
+    mtf.gather(loss, 0, loss.shape.dims[1])
+
+## /mesh_tensorflow/transformer/utils.py
+'''Add the new type of decoding pipeline under run.mode="score_from_file"'''
+eross_entropy = mtf.layers.modifier_softmax_cross_entropy_with_logits(logits, mtf_feature["targets"], vocab_dim)
+
+
+## Add doc2query task
+## Add passage ranking task
+
