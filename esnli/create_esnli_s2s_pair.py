@@ -13,7 +13,7 @@ parser.add_argument("-highlightB", "--path_esnli_highlightB", default="highlight
 parser.add_argument("-explanation", "--path_esnli_explanation", default="explanation.txt", type=str)
 parser.add_argument("-out", "--path_output", type=str)
 parser.add_argument("-target", "--target_type", type=str)
-parser.add_argument("--negative_only", action="store_true", default=False)
+parser.add_argument("-class", "--class_selected", default="all", type=str)
 parser.add_argument("--reverse", action="store_true", default=False)
 args = parser.parse_args()
 
@@ -32,7 +32,7 @@ def read_esnli(args):
     data['label'] = readlines(args.path_esnli_labels)
 
     if os.path.exists(args.path_esnli_explanation):
-        data['explanation'] =readlines(args.path_esnli_explanation)
+        data['explanation'] = readlines(args.path_esnli_explanation)
 
     # highlight generation (whole sentence or keyphrase)
     if args.target_type == 'highlight_plus':
@@ -43,9 +43,12 @@ def read_esnli(args):
         data['highlightB'] = list(map(extract_marked_token, data['highlightB']))
 
     # example filtering 
-    if args.negative_only:
-        data['highlightA'] = list(map(remove_positive_highlight, data['highlightA'], data['label']))
-        data['highlightB'] = list(map(remove_positive_highlight, data['highlightB'], data['label']))
+    if args.class_selected != 'all':
+        data['highlightA'] = [h for (h, l) in zip(data['highlightA'], data['label']) if l == args.class_selected]
+        data['highlightB'] = [h for (h, l) in zip(data['highlightB'], data['label']) if l == args.class_selected]
+
+        # data['highlightA'] = list(map(remove_class, data['highlightA'], data['label']))
+        # data['highlightB'] = list(map(remove_class, data['highlightB'], data['label']))
 
     return data
 
