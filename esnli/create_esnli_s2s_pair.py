@@ -127,9 +127,7 @@ def create_sent_pairs(args):
             if data['label'][idx] == 'entailment':
                 example = "Sentence1: {} Sentence2: {} Entailment:\t{}\n".format(data['sentA'][idx], data['sentB'][idx], data['highlightB'][idx])
 
-
         output.write(example)
-
 
 create_sent_pairs(args)
 print("DONE")
