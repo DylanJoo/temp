@@ -122,9 +122,9 @@ def create_sent_pairs(args):
                         data['highlightA'][idx])
 
         elif args.target_type == "highlight_ctrl":
-            if data['lable'][idx] == 'contradition':
+            if data['label'][idx] == 'contradition':
                 example = "Sentence1: {} Sentence2: {} Contradiction:\t{}\n".format(data['sentA'][idx], data['sentB'][idx], data['highlightB'][idx])
-            if data['lable'][idx] == 'entailment':
+            if data['label'][idx] == 'entailment':
                 example = "Sentence1: {} Sentence2: {} Entailment:\t{}\n".format(data['sentA'][idx], data['sentB'][idx], data['highlightB'][idx])
 
 
