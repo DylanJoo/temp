@@ -35,22 +35,20 @@ def read_esnli(args):
         data['explanation'] = readlines(args.path_esnli_explanation)
 
     # highlight generation (whole sentence or keyphrase)
-    if args.target_type == 'highlight_plus':
-        data['highlightA'] = list(map(prepare_highlight_plus, data['highlightA'], data['label']))
-        data['highlightB'] = list(map(prepare_highlight_plus, data['highlightB'], data['label']))
-    elif args.target_type == 'extraction':
-        data['highlightA'] = list(map(extract_marked_token, data['highlightA']))
-        data['highlightB'] = list(map(extract_marked_token, data['highlightB']))
+    # if args.target_type == 'highlight_plus':
+    #     data['highlightA'] = list(map(prepare_highlight_plus, data['highlightA'], data['label']))
+    #     data['highlightB'] = list(map(prepare_highlight_plus, data['highlightB'], data['label']))
+    # elif args.target_type == 'extraction':
+    #     data['highlightA'] = list(map(extract_marked_token, data['highlightA']))
+    #     data['highlightB'] = list(map(extract_marked_token, data['highlightB']))
 
     # example filtering 
     if args.class_selected != 'all':
-        data['sentA'] = [h for (h, l) in zip(data['sentA'], data['label']) if l == args.class_selected]
-        data['sentB'] = [h for (h, l) in zip(data['sentB'], data['label']) if l == args.class_selected]
-        data['highlightA'] = [h for (h, l) in zip(data['highlightA'], data['label']) if l == args.class_selected]
-        data['highlightB'] = [h for (h, l) in zip(data['highlightB'], data['label']) if l == args.class_selected]
-        data['label'] = [l for  l in data['label'] if l == args.class_selected]
-        # data['highlightA'] = list(map(remove_class, data['highlightA'], data['label']))
-        # data['highlightB'] = list(map(remove_class, data['highlightB'], data['label']))
+        data['sentA'] = [h for (h, l) in zip(data['sentA'], data['label']) if l in args.class_selected]
+        data['sentB'] = [h for (h, l) in zip(data['sentB'], data['label']) if l in args.class_selected]
+        data['highlightA'] = [h for (h, l) in zip(data['highlightA'], data['label']) if l in args.class_selected]
+        data['highlightB'] = [h for (h, l) in zip(data['highlightB'], data['label']) if l in args.class_selected]
+        data['label'] = [l for  l in data['label'] if l in args.class_selected]
 
     return data
 
@@ -122,6 +120,13 @@ def create_sent_pairs(args):
                 example += "Sentence1: {} Sentence2: {} Highlight:\t{}\n".format(
                         data['sentB'][idx], data['sentA'][idx],
                         data['highlightA'][idx])
+
+        elif args.target_type == "highlight_ctrl":
+            if data['lable'][idx] == 'contradition':
+                example = "Sentence1: {} Sentence2: {} Contradiction:\t{}\n".format(data['sentA'][idx], data['sentB'][idx], data['highlightB'][idx])
+            if data['lable'][idx] == 'entailment':
+                example = "Sentence1: {} Sentence2: {} Entailment:\t{}\n".format(data['sentA'][idx], data['sentB'][idx], data['highlightB'][idx])
+
 
         output.write(example)
 
