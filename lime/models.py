@@ -18,9 +18,9 @@ from sklearn.linear_model import Ridge, Lasso, ElasticNet
 def get_model(model_name_or_path):
     if model_name_or_path is None:
         # model_name_or_path = "sentence-transformers/stsb-bert-base"
-        model_name_or_path = "textattack/bert-base-uncased-SST-2"
+        # model_name_or_path = "textattack/bert-base-uncased-SST-2"
         # model_name_or_path = "deepset/sentence_bert"
-        # model_name_or_path = "textattack/bert-base-uncased-snli"
+        model_name_or_path = "textattack/bert-base-uncased-snli"
         # model_name_or_path = "bert-base-uncased"
     return AutoModelForSequenceClassification.from_pretrained(model_name_or_path)
 
@@ -28,8 +28,8 @@ def get_tokenizer(tokenizer_name):
     if tokenizer_name is None:
         # tokenizer_name = "sentence-transformers/stsb-bert-base"
         # tokenizer_name = "deepset/sentence_bert"
-        tokenizer_name = "textattack/bert-base-uncased-SST-2"
-        # tokenizer_name = "textattack/bert-base-uncased-snli"
+        # tokenizer_name = "textattack/bert-base-uncased-SST-2"
+        tokenizer_name = "textattack/bert-base-uncased-snli"
         # tokenizer_name = "bert-base-uncased"
     return AutoTokenizer.from_pretrained(tokenizer_name)
 
