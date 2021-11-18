@@ -3,7 +3,7 @@ import re
 import string
 import argparse
 import collections
-#
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-sentA", "--path_esnli_sentenceA", default="sentenceA.txt", type=str)
 parser.add_argument("-sentB", "--path_esnli_sentenceB", default="sentenceB.txt", type=str)
@@ -18,6 +18,9 @@ parser.add_argument("--reverse", action="store_true", default=False)
 args = parser.parse_args()
 
 def read_esnli(args):
+    """The function of reading the preprocess(segmented) esnli data,
+    includes the sentence A/B, highlight A/V
+    """
     
     def readlines(filename):
         f = open(filename, 'r').readlines()
@@ -34,14 +37,6 @@ def read_esnli(args):
     if os.path.exists(args.path_esnli_explanation):
         data['explanation'] = readlines(args.path_esnli_explanation)
 
-    # highlight generation (whole sentence or keyphrase)
-    # if args.target_type == 'highlight_plus':
-    #     data['highlightA'] = list(map(prepare_highlight_plus, data['highlightA'], data['label']))
-    #     data['highlightB'] = list(map(prepare_highlight_plus, data['highlightB'], data['label']))
-    # elif args.target_type == 'extraction':
-    #     data['highlightA'] = list(map(extract_marked_token, data['highlightA']))
-    #     data['highlightB'] = list(map(extract_marked_token, data['highlightB']))
-
     # example filtering 
     if args.class_selected != 'all':
         data['sentA'] = [h for (h, l) in zip(data['sentA'], data['label']) if l in args.class_selected]
@@ -49,6 +44,13 @@ def read_esnli(args):
         data['highlightA'] = [h for (h, l) in zip(data['highlightA'], data['label']) if l in args.class_selected]
         data['highlightB'] = [h for (h, l) in zip(data['highlightB'], data['label']) if l in args.class_selected]
         data['label'] = [l for  l in data['label'] if l in args.class_selected]
+
+    if args.reverse:
+        data['sentA'] = data['sentA'] + data['sentB']
+        data['sentB'] = data['sentB'] + data['sentA']
+        data['highlightA'] = data['highligthA'] + data['hightlightB']
+        data['highlightB'] = data['highligthB'] + data['hightlightA']
+        data['label'] = data['label'] + data['label']
 
     return data
 
@@ -68,22 +70,6 @@ def extract_marked_token(sentence):
     else:
         return " ||| ".join(token_list)
 
-def prepare_highlight_plus(sentence, label):
-
-    if label == "entailment":
-        sentence = sentence.replace("*", "+")
-    elif label == "neutral":
-        sentence = sentence.replace("*", "=")
-    elif label == "contradiction":
-        sentence = sentence.replace("*", "-")
-    return sentence
-
-def remove_positive_highlight(sentence, label):
-
-    if label != "contradiction":
-        sentence = sentence.replace("*", "")
-    return sentence
-
 def create_sent_pairs(args):
 
     data = read_esnli(args)
@@ -97,41 +83,39 @@ def create_sent_pairs(args):
     # ESNLI provides several type of way to learn with supervised.
     for idx in range(data_length):
         # 1) Naive NLI supervised task
-        if args.target_type == "clf":
+        if args.target_type == "classification":
             example = "Hypothesis: {} Premise: {} Relation:\t{}\n".format(
-                    data['sentA'][idx], data['sentB'][idx], 
-                    data['label'][idx])
-        elif args.target_type == "expl":
-            example = "Hypothesis: {} Premise: {} Relation:\t{}\n".format(
-                    data['sentA'][idx], data['sentB'][idx], 
-                    data['explanation'][idx])
-        elif args.target_type == "clf_expl":
-            example = "Hypothesis: {} Premise: {} Relation:\t{} ||| {}\n".format(
-                    data['sentA'][idx], data['sentB'][idx], 
-                    data['label'][idx], data['explanation'][idx])
+                    data['sentA'][idx], data['sentB'][idx], data['label'][idx]
+            )
+        elif args.target_type == "explanation":
+            example = "Hypothesis: {} Premise: {} Explanation:\t{}\n".format(
+                    data['sentA'][idx], data['sentB'][idx], data['explanation'][idx]
+            )
+        elif args.target_type == "classification_and_explanation":
+            example = "Hypothesis: {} Premise: {} Relation and Explanation:\t{} ||| {}\n".format(
+                    data['sentA'][idx], data['sentB'][idx], data['label'][idx], data['explanation'][idx]
+            )
 
         # 2) Highlighter supervised task
         if args.target_type == "highlight":
             example = "Sentence1: {} Sentence2: {} Highlight:\t{}\n".format(
-                    data['sentA'][idx], data['sentB'][idx],
-                    data['highlightB'][idx])
-
-            if args.reverse:
-                example += "Sentence1: {} Sentence2: {} Highlight:\t{}\n".format(
-                        data['sentB'][idx], data['sentA'][idx],
-                        data['highlightA'][idx])
-
+                    data['sentA'][idx], data['sentB'][idx], data['highlightB'][idx]
+            )
         if args.target_type == "highlight_ctrl":
             if data['label'][idx] == 'contradiction':
-                example = "Sentence1: {} Sentence2: {} Contradiction:\t{}\n".format(data['sentA'][idx], data['sentB'][idx], data['highlightB'][idx])
+                example = "Sentence1: {} Sentence2: {} Contradiction:\t{}\n".format(
+                        data['sentA'][idx], data['sentB'][idx], data['highlightB'][idx]
+                )
             if data['label'][idx] == 'entailment':
-                example = "Sentence1: {} Sentence2: {} Entailment:\t{}\n".format(data['sentA'][idx], data['sentB'][idx], data['highlightB'][idx])
+                example = "Sentence1: {} Sentence2: {} Entailment:\t{}\n".format(
+                        data['sentA'][idx], data['sentB'][idx], data['highlightB'][idx]
+                )
             if data['label'][idx] == 'neutral':
-                example = "Sentence1: {} Sentence2: {} Neutral:\t{}\n".format(data['sentA'][idx], data['sentB'][idx], data['highlightB'][idx])
-            print(example)
+                example = "Sentence1: {} Sentence2: {} Neutral:\t{}\n".format(
+                        data['sentA'][idx], data['sentB'][idx], data['highlightB'][idx]
+                )
         
         output.write(example)
 
 create_sent_pairs(args)
 print("DONE")
-
