@@ -3,7 +3,7 @@ import re
 import string
 import argparse
 import collections
-
+#
 parser = argparse.ArgumentParser()
 parser.add_argument("-sentA", "--path_esnli_sentenceA", default="sentenceA.txt", type=str)
 parser.add_argument("-sentB", "--path_esnli_sentenceB", default="sentenceB.txt", type=str)
