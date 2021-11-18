@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-
 from xxx.models import BertForSegmentPrediction
 from xxx.trainer import xxxTrainer 
 
