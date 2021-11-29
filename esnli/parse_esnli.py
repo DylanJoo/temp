@@ -83,7 +83,7 @@ if os.path.exists(args.path_esnli_test) is False and args.split == 'test':
 # Read and preprocessed the file
 for s in args.split.split("|"):
     if os.path.exists(os.path.join(args.path_output_dir, s)) is False:
-        os.system('mkdir {}'.format(args.path_output_dir)))
+        os.system('mkdir {}'.format(args.path_output_dir))
         os.system('mkdir {}'.format(os.path.join(args.path_output_dir, s)))
         print("Directory Created")
     parse_esnli_csv(args, split=s)
