@@ -1,3 +1,5 @@
 esnli/**/*.csv
 esnli/**/*.txt
 esnli/**/*.tsv
+esnli/**/*.jsonl
+esnli/**/*.json
