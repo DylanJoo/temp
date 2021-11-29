@@ -5,12 +5,12 @@ import argparse
 import collections
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-sentA", "--path_esnli_sentenceA", default="sentenceA.txt", type=str)
-parser.add_argument("-sentB", "--path_esnli_sentenceB", default="sentenceB.txt", type=str)
-parser.add_argument("-label", "--path_esnli_labels", default="label.txt", type=str)
-parser.add_argument("-highlightA", "--path_esnli_highlightA", default="highlightA.txt", type=str)
-parser.add_argument("-highlightB", "--path_esnli_highlightB", default="highlightB.txt", type=str)
-parser.add_argument("-explanation", "--path_esnli_explanation", default="explanation.txt", type=str)
+parser.add_argument("-sentA", "--path_sentenceA", default="sentenceA.txt", type=str)
+parser.add_argument("-sentB", "--path_sentenceB", default="sentenceB.txt", type=str)
+parser.add_argument("-label", "--path_labels", default="label.txt", type=str)
+parser.add_argument("-highlightA", "--path_highlightA", default="highlightA.txt", type=str)
+parser.add_argument("-highlightB", "--path_highlightB", default="highlightB.txt", type=str)
+parser.add_argument("-explanation", "--path_explanation", default="explanation.txt", type=str)
 parser.add_argument("-out", "--path_output", type=str)
 parser.add_argument("-target", "--target_type", type=str)
 parser.add_argument("-class", "--class_selected", default="all", type=str)
@@ -28,14 +28,14 @@ def read_esnli(args):
         return data
 
     data = collections.OrderedDict()
-    data['sentA'] = readlines(args.path_esnli_sentenceA)
-    data['sentB'] = readlines(args.path_esnli_sentenceB)
-    data['highlightA'] = readlines(args.path_esnli_highlightA)
-    data['highlightB'] = readlines(args.path_esnli_highlightB)
-    data['label'] = readlines(args.path_esnli_labels)
+    data['sentA'] = readlines(args.path_sentenceA)
+    data['sentB'] = readlines(args.path_sentenceB)
+    data['highlightA'] = readlines(args.path_highlightA)
+    data['highlightB'] = readlines(args.path_highlightB)
+    data['label'] = readlines(args.path_labels)
 
-    if os.path.exists(args.path_esnli_explanation):
-        data['explanation'] = readlines(args.path_esnli_explanation)
+    if os.path.exists(args.path_explanation):
+        data['explanation'] = readlines(args.path_explanation)
 
     # example filtering 
     if args.class_selected != 'all':

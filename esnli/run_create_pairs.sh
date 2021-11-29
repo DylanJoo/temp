@@ -27,4 +27,3 @@ python3 create_esnli_s2s_pair.py \
   -out preprocessed/${split}/esnli_sents_highlight_ctrl_pairs.tsv \
   -class 'all' \
   -target 'highlight_ctrl'
-~                             
