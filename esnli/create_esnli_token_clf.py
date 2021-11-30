@@ -78,7 +78,7 @@ def keyword_extraction(srcA, srcB, tgtA, tgtB, highlightA=False):
             'sentB': ' '.join(tokens_B), 
             'keywordsA': tokens_A_hl, 
             'keywordsB': tokens_B_hl,
-            'labels': labels_A + [-1] + labels_B}
+            'labels': labels_A + labels_B}
 
 def create_highlight_list(args):
 
