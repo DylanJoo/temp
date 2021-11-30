@@ -30,27 +30,6 @@ def keyword_extraction(srcA, srcB, tgtA, tgtB, highlightA=False):
     tgtA = srcA if tgtA is None else tgtA
     tgtB = srcB if tgtB is None else tgtB
 
-    # p_highlight = re.compile(r"[\*].*?[\*]")
-    # p_punct = re.compile("[" + re.escape(string.punctuation) + "]")
-    #
-    # tokens_A_hl, tokens_B_hl = [], []
-    # # convert the star labels to tokens (sentenceA/highlightA)
-    # findings = p_highlight.findall(tgtA)
-    # for token in findings:
-    #     token = p_punct.sub("", token)
-    #     tokens_A_hl += token.split()
-    #
-    # # convert the star labels to tokens (sentenceB/highlightB)
-    # findings = p_highlight.findall(tgtB)
-    # for token in findings:
-    #     token = p_punct.sub("", token)
-    #     tokens_B_hl += token.split()
-
-    # tgtA = tgtA.replace("*", "")
-    # tgtB = tgtB.replace("*", "")
-    # tokens_A = [tok.text for tok in nlp(tgtA)]
-    # tokens_B = [tok.text for tok in nlp(tgtB)]
-
     def highlight_process(sentence):
         tokens = list()
         tokens_hl = list()

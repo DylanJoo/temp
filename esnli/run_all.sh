@@ -1,4 +1,4 @@
-bash run parser.sh
+bash run_parser.shZZ
 
 bash run_create_pairs.sh "train"
 bash run_create_pairs.sh "dev"
