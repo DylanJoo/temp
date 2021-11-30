@@ -20,8 +20,9 @@ nlp = English()
 
 def keyword_extraction(tgtA, tgtB, highlightA=False):
     """ Convert the "starred marks" to the separated list of elements. 
+    Noted that, the default highlightA is False, only extract highlight B for simplicity.
 
-    Note: for simplicity, default highlightA is False, only extract highlight B.
+    [TODO] position-sensitive keyword
     """
     p_highlight = re.compile(r"[\*].*?[\*]")
     p_punct = re.compile("[" + re.escape(string.punctuation) + "]")
