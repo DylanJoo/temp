@@ -23,24 +23,24 @@ def keyword_extraction(tgtA, tgtB, highlightA=False):
     Noted that, the default highlightA is False, only extract highlight B for simplicity.
 
     [TODO] position-sensitive keyword
+    [TODO] first tokenize with word-level, and extract the marked tokens.
     """
     p_highlight = re.compile(r"[\*].*?[\*]")
     p_punct = re.compile("[" + re.escape(string.punctuation) + "]")
     
-    # convert the star labels to tokens (sentenceA/highlightA)
-    tokens_A_hl, tokens_B_hl = [], []
 
-    if highlightA:
-        findings = p_highlight.findall(tgtA)
-        for token in findings:
-            token = p_punct.sub("", token)
-            tokens_A_hl += [token]
+    tokens_A_hl, tokens_B_hl = [], []
+    # convert the star labels to tokens (sentenceA/highlightA)
+    findings = p_highlight.findall(tgtA)
+    for token in findings:
+        token = p_punct.sub("", token)
+        tokens_A_hl += token.split()
 
     # convert the star labels to tokens (sentenceB/highlightB)
     findings = p_highlight.findall(tgtB)
     for token in findings:
         token = p_punct.sub("", token)
-        tokens_B_hl += [token]
+        tokens_B_hl += token.split()
 
     tgtA = tgtA.replace("*", "")
     tgtB = tgtB.replace("*", "")
@@ -49,8 +49,9 @@ def keyword_extraction(tgtA, tgtB, highlightA=False):
 
     return {'sentA': ' '.join(tokens_A), 
             'sentB': ' '.join(tokens_B), 
-            'keywordA': tokens_A_hl, 
-            'keywordB': tokens_B_hl}
+            'keywordsA': ' '.join(tokens_A_hl), 
+            'keywordsB': ' '.join(tokens_B_hl),
+            'labels': []}
 
 def create_highlight_list(args):
 
