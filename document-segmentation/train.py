@@ -2,6 +2,7 @@
 """
 import sys
 import torch
+import random
 import multiprocessing
 from dataclasses import dataclass, field
 from typing import Optional, Union, List, Dict, Tuple, Any
@@ -71,7 +72,10 @@ class OurTrainingArguments(TrainingArguments):
     weight_decay: float = field(default=0.0)
     logging_dir: Optional[str] = field(default='./logs')
     warmup_steps: int = field(default=1000)
+    remove_unused_columns: Optional[bool] = field(default=True)
     resume_from_checkpiint: Optional[str] = field(default=None)
+    instance_per_example: int = field(default=2)
+    negative_sampling: Optional[str] = field(default="hard_max")
 
 
 def main():
@@ -133,54 +137,59 @@ def main():
         """
         tokenizer: PreTrainedTokenizerBase
         padding: Union[bool, str, PaddingStrategy] = True
+        truncation: Union[bool, str] = True
         max_length: Optional[int] = None
         pad_to_multiple_of: Optional[int] = None
         return_tensors: str = "pt"
-
-        def merge(self, batch_seq1, batch_seq2, labels, negative_sampling=None):
-            batch = dict()
-            batch['input_ids'] = torch.cat(
-                    (batch_seq1['input_ids'], batch_seq2['input_ids']), dim=-1
-            )
-            batch['attention_mask'] = torch.cat(
-                    (batch_seq1['attention_mask'], batch_seq2['attention_mask']), dim=-1
-            )
-            batch['token_type_ids'] = torch.cat(
-                    (batch_seq1['token_type_ids'], batch_seq2['attention_mask']), dim=-1
-            )
-            return batch
+        n_positve_per_example: Optional[int] = None
+        n_negative_per_example: Optional[int] = None
+        padding: Union[bool, str] = True
+        negative_sampling: str = 'random'
 
         def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
 
-            # flatten all the (sentence pair) examples of (document) exampels 
             flat_left_features, flat_right_features, flat_labels = [], [], []
-            for i, doc_features in enumerate(features):
-                flat_left_features += [f"[CLS] {sent}" for sent in doc_features['left_context']]
-                flat_right_features += [f"[SEP] {sent}" for sent in doc_features['right_context']]
-                flat_labels += doc_features['targets']
 
-            # padding the left sentence
-            batch_left = self.tokenizer(
-                flat_left_features,
+            for i in range(len(features)):
+                doc_features = features[i]       
+                pos_ind = [ind for ind in doc_features['targets'] if ind == 1]
+                pos_ind = random.sample(
+                        pos_ind, min(self.n_positive_per_example, len(pos_ind))
+                )
+                neg_ind = [ind for ind in doc_features['targets'] if ind == 0]
+
+                if "hard" in self.negative_sampling:
+                    # haed negative
+                    final_neg_ind = []
+                    for a in pos_ind:
+                        distance = [abs(a-b) for b in neg_ind]
+                        if self.negative_sampling == 'hard_max':
+                            f = (lambda x: max(x))
+                        elif self.negative_sampling == 'hard_min':
+                            f = (lambda x: min(x))
+                        final_neg_ind.append(neg_ind[distance.index(f(distance))])
+                else:
+                    # random
+                    final_neg_ind = random.sample(
+                            neg_ind, min(self.n_negative_per_example, len(neg_ind))
+                    )
+
+                # [Warning] Not sure there are > 2 positive label in each document.
+                for j in pos_j + final_neg_ind:
+                    flat_left_features += [doc_features['left_context'][j]]
+                    flat_right_features += [doc_features['right_context'][j]]
+                    flat_labels += [doc_features['targets'][j]]
+
+            # Direct using huggingface truncation
+            batch = self.tokenizer(
+                flat_left_features, flat_right_features,
                 padding=self.padding,
-                max_length=int(self.max_length/2),
+                truncation=self.truncation,
+                max_length=self.max_length,
                 pad_to_multiple_of=self.pad_to_multiple_of,
                 return_tensors=self.return_tensors,
-                add_special_tokens=False
             )
-
-            # padding the right sentence
-            batch_right = self.tokenizer(
-                flat_right_features,
-                padding=self.padding,
-                max_length=int(self.max_length/2),
-                pad_to_multiple_of=self.pad_to_multiple_of,
-                return_tensors=self.return_tensors,
-                add_special_tokens=False
-            )
-
-            # merge them into features
-            batch = self.merge(batch_left, batch_right, flat_labels)
+            batch['labels'] = torch.tensor(flat_labels)
 
             return batch
 
@@ -189,7 +198,10 @@ def main():
             tokenizer=tokenizer,
             max_length=data_args.max_seq_length,
             return_tensors="pt",
-            padding=True
+            padding=True,
+            n_positve_per_example=training_args.instance_per_example,
+            n_negative_per_example=training_args.instance_per_example,
+            negative_sampling=training_args.negative_sampling
     )
 
     # Trainer
