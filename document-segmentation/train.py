@@ -141,7 +141,7 @@ def main():
         max_length: Optional[int] = None
         pad_to_multiple_of: Optional[int] = None
         return_tensors: str = "pt"
-        n_positve_per_example: Optional[int] = None
+        n_positive_per_example: Optional[int] = None
         n_negative_per_example: Optional[int] = None
         padding: Union[bool, str] = True
         negative_sampling: str = 'random'
@@ -175,7 +175,7 @@ def main():
                     )
 
                 # [Warning] Not sure there are > 2 positive label in each document.
-                for j in pos_j + final_neg_ind:
+                for j in pos_ind + final_neg_ind:
                     flat_left_features += [doc_features['left_context'][j]]
                     flat_right_features += [doc_features['right_context'][j]]
                     flat_labels += [doc_features['targets'][j]]
@@ -199,7 +199,7 @@ def main():
             max_length=data_args.max_seq_length,
             return_tensors="pt",
             padding=True,
-            n_positve_per_example=training_args.instance_per_example,
+            n_positive_per_example=training_args.instance_per_example,
             n_negative_per_example=training_args.instance_per_example,
             negative_sampling=training_args.negative_sampling
     )
