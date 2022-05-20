@@ -65,13 +65,13 @@ class OurTrainingArguments(TrainingArguments):
     num_train_epochs: float = field(default=1.0)
     save_steps: int = field(default=1000)
     eval_steps: int = field(default=5000)
-    evaluate_during_training: bool = field(default=False)
+    evaluate_during_training: bool = field(default=True)
     evaluation_strategy: Optional[str] = field(default='no')
     per_device_train_batch_size: int = field(default=8)
     per_device_eval_batch_size: int = field(default=8)
     weight_decay: float = field(default=0.0)
     logging_dir: Optional[str] = field(default='./logs')
-    warmup_steps: int = field(default=1000)
+    warmup_steps: int = field(default=0)
     remove_unused_columns: Optional[bool] = field(default=True)
     resume_from_checkpiint: Optional[str] = field(default=None)
     instance_per_example: int = field(default=2)
@@ -111,7 +111,6 @@ def main():
     config = AutoConfig.from_pretrained(model_args.config_name, **config_kwargs)
     tokenizer = AutoTokenizer.from_pretrained(model_args.tokenizer_name, **tokenizer_kwargs)
 
-
     # model 
     model_kwargs = {
             "cache_dir": model_args.cache_dir,
@@ -149,6 +148,7 @@ def main():
         def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
 
             flat_left_features, flat_right_features, flat_labels = [], [], []
+            offset = 0
 
             for i in range(len(features)):
                 doc_features = features[i]       
@@ -174,11 +174,21 @@ def main():
                             neg_ind, min(self.n_negative_per_example, len(neg_ind))
                     )
 
+                # offset compensation (from last example)
+                if offset > 0:
+                    remain = [i for i in range(doc_features) if i not in pos_ind+final_neg_ind]
+                    remain = random.sample(remain, min(offset, len(remain)))
+                    offset -= len(remain)
+                else:
+                    remain = []
+
                 # [Warning] Not sure there are > 2 positive label in each document.
-                for j in pos_ind + final_neg_ind:
+                for j in pos_ind + final_neg_ind + remain:
                     flat_left_features += [doc_features['left_context'][j]]
                     flat_right_features += [doc_features['right_context'][j]]
                     flat_labels += [doc_features['targets'][j]]
+
+                offset += self.n_negative_per_example - len(final_neg_ind)
 
             # Direct using huggingface truncation
             batch = self.tokenizer(

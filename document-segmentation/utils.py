@@ -1,4 +1,5 @@
 import re
+import pickle
 from pathlib2 import Path
 from nltk.tokenize import RegexpTokenizer
 from torch.utils.data import Dataset, DataLoader
@@ -32,6 +33,18 @@ def get_files(path):
     files = [str(p) for p in all_objects if p.is_file()]
     return files
 
+def cache_wiki_exclude_filenames(wiki_folder):
+    """Specifiy the document examples with less than 2 positive"""
+    w = WikipediaDataSet(wiki_folder)
+    exclude_cache_file_path = wiki_folder / 'exclude_index_paths_cache'
+    exclude_list = []
+    for i in range(len(wiki)):
+        if sum(w[i]['targets']) < 2:
+            exclude_list.append(i)
+
+    with open(exclude_cache_file_path, 'wb') as f:
+        pickle.dump(exclude_list, f)
+
 def cache_wiki_filenames(wiki_folder):
     files = Path(wiki_folder).glob('*/*/*/*')
     cache_file_path = wiki_folder / 'paths_cache'
@@ -40,27 +53,6 @@ def cache_wiki_filenames(wiki_folder):
         for file in files:
             print(file)
             f.write(str(file) + u'\n')
-
-# def get_scections_from_text(txt, high_granularity=True):
-#     """ the hihghest granularity indicates the section-level segmenation.  """
-#
-#     if high_granularity:
-#         sections_to_keep_pattern = get_seperator_format() # all the seperation range
-#     else:
-#         # if low granularity required we should flatten segments within segemnt level 2
-#         pattern_to_ommit = get_seperator_format((3, 999))
-#         txt = re.sub(pattern_to_ommit, "", txt)
-#
-#         sections_to_keep_pattern = get_seperator_format( (1, 2)) # only the section 1,2 remained
-#
-#         #delete empty lines after re.sub() some substitured section would be empty line
-#         sentences = [s for s in txt.strip().split("\n") if len(s) > 0 and s != "\n"]
-#         txt = '\n'.join(sentences).strip('\n')
-#
-#     all_sections = re.split(sections_to_keep_pattern, txt)
-#     non_empty_sections = [s for s in all_sections if len(s) > 0]
-#
-#     return non_empty_sections 
 
 def get_sections(path, high_granularity=True):
     # clean_section = (lambda x: x.strip())
@@ -94,7 +86,15 @@ def get_sections(path, high_granularity=True):
 
 
 class WikipediaDataSet(Dataset):
-    def __init__(self, root, n_context_sent=1, remove_preface_segment=True, train=True, manifesto=False, folder=False, high_granularity=False):
+    def __init__(self, 
+                 root, 
+                 n_context_sent=1, 
+                 remove_preface_segment=True, 
+                 train=True, 
+                 manifesto=False, 
+                 folder=False, 
+                 high_granularity=True,
+                 truncate_less_than_n_positive=2):
 
         # if manifesto:
         #     self.textfiles = list(Path(root).glob('*'))
@@ -102,9 +102,7 @@ class WikipediaDataSet(Dataset):
             self.textfiles = get_files(root)
         else:
             root_path = Path(root)
-            # print("Load from root path: " + str(root_path))
             cache_path = root_path / 'paths_cache'
-            # print("Load from cache path: " + str(cache_path))
             if not cache_path.exists():
                 print("Cache not exist, auto generating...")
                 cache_wiki_filenames(root_path)
@@ -112,11 +110,27 @@ class WikipediaDataSet(Dataset):
 
         if len(self.textfiles) == 0:
             raise RuntimeError('Found 0 images in subfolders of: {}'.format(root))
+
         self.train = train
         self.root = root
         self.high_granularity = high_granularity
         self.n_context_sent = n_context_sent
         self.remove_preface_segment = remove_preface_segment
+
+
+    def filtering(self):
+        root_path = Path(self.root)
+        cache_path = root_path / 'exclude_index_paths_cache'
+        if not cache_path.exists():
+            print("Cache not exist, auto generating...")
+            cache_wiki_exclude_filenames(root_path)
+
+        # loading pickle file to list 
+        with open(cache_path, 'rb') as fp:
+            exclude_list = pickle.load(fp)
+
+        for i in range(exclude):
+            self.textfiles.pop(i)
 
     def __getitem__(self, index):
         path = self.textfiles[index]
@@ -167,7 +181,7 @@ class WikipediaDataSet(Dataset):
                 prev_context = " ".join(prev_context)
                 after_context = " ".join(after_context)
                 left_context.append(prev_context)
-                right_context.append(prev_context)
+                right_context.append(after_context)
                 # data.append([prev_context, after_context])
                 targets.append(label[sent_ind-1])
 
