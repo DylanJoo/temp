@@ -1,5 +1,3 @@
-"""
-"""
 import sys
 import torch
 import random
@@ -123,7 +121,9 @@ def main():
     # Dataset 
     # (1) Wikipedia dataset
     train_dataset = WikipediaDataSet(data_args.train_folder)
+    train_dataset.filtering()
     eval_dataset = WikipediaDataSet(data_args.eval_folder)
+    eval_dataset.filtering()
 
     @dataclass
     class DataCollatorWithMultipleInput:
@@ -152,11 +152,11 @@ def main():
 
             for i in range(len(features)):
                 doc_features = features[i]       
-                pos_ind = [ind for ind in doc_features['targets'] if ind == 1]
+                pos_ind = [ind for ind, lbl in enumerate(doc_features['targets']) if lbl == 1]
                 pos_ind = random.sample(
                         pos_ind, min(self.n_positive_per_example, len(pos_ind))
                 )
-                neg_ind = [ind for ind in doc_features['targets'] if ind == 0]
+                neg_ind = [ind for ind, lbl in enumerate(doc_features['targets']) if lbl == 0]
 
                 if "hard" in self.negative_sampling:
                     # haed negative

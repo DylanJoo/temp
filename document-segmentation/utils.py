@@ -33,23 +33,26 @@ def get_files(path):
     files = [str(p) for p in all_objects if p.is_file()]
     return files
 
-def cache_wiki_exclude_filenames(wiki_folder):
+def cache_wiki_exclude_filenames(wiki, wiki_folder):
     """Specifiy the document examples with less than 2 positive"""
-    w = WikipediaDataSet(wiki_folder)
-    exclude_cache_file_path = wiki_folder / 'exclude_index_paths_cache'
     exclude_list = []
-    for i in range(len(wiki)):
-        if sum(w[i]['targets']) < 2:
-            exclude_list.append(i)
+    cache_path = wiki_folder / 'doc_exclude_paths.cache'
 
-    with open(exclude_cache_file_path, 'wb') as f:
+    for i in range(len(wiki)):
+        if sum(wiki[i]['targets']) < 2 or len(wiki[i]['targets']) < 4:
+            exclude_list.append(i)
+        if i % 100000 == 0:
+            print(f"{i} documents viewed...")
+    print(f"{len(exclude_list)} documents obtained less than 2 positive")
+
+    with open(cache_path, 'wb') as f:
         pickle.dump(exclude_list, f)
 
 def cache_wiki_filenames(wiki_folder):
     files = Path(wiki_folder).glob('*/*/*/*')
-    cache_file_path = wiki_folder / 'paths_cache'
+    cache_path = wiki_folder / 'doc_paths.cache'
 
-    with cache_file_path.open('w+') as f:
+    with cache_path.open('w+') as f:
         for file in files:
             print(file)
             f.write(str(file) + u'\n')
@@ -102,7 +105,7 @@ class WikipediaDataSet(Dataset):
             self.textfiles = get_files(root)
         else:
             root_path = Path(root)
-            cache_path = root_path / 'paths_cache'
+            cache_path = root_path / 'doc_paths.cache'
             if not cache_path.exists():
                 print("Cache not exist, auto generating...")
                 cache_wiki_filenames(root_path)
@@ -120,17 +123,28 @@ class WikipediaDataSet(Dataset):
 
     def filtering(self):
         root_path = Path(self.root)
-        cache_path = root_path / 'exclude_index_paths_cache'
+        cache_path = root_path / 'doc_exclude_paths.cache'
         if not cache_path.exists():
             print("Cache not exist, auto generating...")
-            cache_wiki_exclude_filenames(root_path)
+            cache_wiki_exclude_filenames(self, root_path)
 
         # loading pickle file to list 
         with open(cache_path, 'rb') as fp:
             exclude_list = pickle.load(fp)
 
-        for i in range(exclude):
-            self.textfiles.pop(i)
+        temp = []
+        for i, j in enumerate(self.textfiles):
+            if i == exclude_list[0]:
+                exclude_list.pop(0) # pop out the first
+                if len(exclude_list) == 0:
+                    break 
+            else:
+                temp.append(j)
+            if i % 50000 == 0:
+                print(f"{i} documents checked")
+        
+        print(f"[FILTER] {len(self.textfiles)} --> {len(temp)}")
+        self.textfiles = temp
 
     def __getitem__(self, index):
         path = self.textfiles[index]
@@ -146,9 +160,6 @@ class WikipediaDataSet(Dataset):
 
     def read_fin10k_file(self):
         pass
-
-    def __repr__(self):
-        return f"TO BE COSTRUCTED..."
 
     def read_wiki_file(self, path, n_context_sent=1, remove_preface_segment=True, high_granularity=True):
         all_sections = get_sections(path, high_granularity)
