@@ -3,5 +3,4 @@ esnli/**/*.txt
 esnli/**/*.tsv
 esnli/**/*.jsonl
 esnli/**/*.json
-document-segmentation/cache/train/*
-document-segmentation/cache/dev/*
+document-segmentation/wiki_727/*
