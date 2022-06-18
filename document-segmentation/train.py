@@ -4,7 +4,7 @@ import random
 import multiprocessing
 from dataclasses import dataclass, field
 from typing import Optional, Union, List, Dict, Tuple, Any
-from utils import WikipediaDataSet
+from utils import WikipediaDataset
 
 from transformers import (
     AutoConfig,
@@ -64,16 +64,16 @@ class OurTrainingArguments(TrainingArguments):
     save_steps: int = field(default=1000)
     eval_steps: int = field(default=5000)
     evaluate_during_training: bool = field(default=True)
-    evaluation_strategy: Optional[str] = field(default='no')
+    evaluation_strategy: Optional[str] = field(default='steps')
     per_device_train_batch_size: int = field(default=8)
     per_device_eval_batch_size: int = field(default=8)
     weight_decay: float = field(default=0.0)
     logging_dir: Optional[str] = field(default='./logs')
     warmup_steps: int = field(default=0)
-    remove_unused_columns: Optional[bool] = field(default=True)
-    resume_from_checkpiint: Optional[str] = field(default=None)
+    remove_unused_columns: Optional[bool] = field(default=False)
+    resume_from_checkpoint: Optional[bool] = field(default=None)
     instance_per_example: int = field(default=2)
-    negative_sampling: Optional[str] = field(default="hard_max")
+    negative_sampling: Optional[str] = field(default="hard_min")
 
 
 def main():
@@ -120,13 +120,13 @@ def main():
 
     # Dataset 
     # (1) Wikipedia dataset
-    train_dataset = WikipediaDataSet(data_args.train_folder)
+    train_dataset = WikipediaDataset(data_args.train_folder)
     train_dataset.filtering()
-    eval_dataset = WikipediaDataSet(data_args.eval_folder)
+    eval_dataset = WikipediaDataset(data_args.eval_folder)
     eval_dataset.filtering()
 
     @dataclass
-    class DataCollatorWithMultipleInput:
+    class WikiDataCollator:
         """ Padding with defined maximum length in left/right context
 
         Note the special tokens are padded in this way:
@@ -204,7 +204,7 @@ def main():
             return batch
 
     # (2) data collator: transform the datset into the training mini-batch
-    data_collator = DataCollatorWithMultipleInput(
+    data_collator = WikiDataCollator(
             tokenizer=tokenizer,
             max_length=data_args.max_seq_length,
             return_tensors="pt",
@@ -225,8 +225,9 @@ def main():
     # trainer.model_args = model_args
     
     # ***** strat training *****
-    model_path = None #[TODO] parsing the argument model_args.model_name_or_path 
-    results = trainer.train(model_path=model_path)
+    results = trainer.train(
+            resume_from_checkpoint=training_args.resume_from_checkpoint,
+    )
 
     return results
 

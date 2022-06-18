@@ -88,7 +88,7 @@ def get_sections(path, high_granularity=True):
     return sections
 
 
-class WikipediaDataSet(Dataset):
+class WikipediaDataset(Dataset):
     def __init__(self, 
                  root, 
                  n_context_sent=1, 
@@ -158,9 +158,6 @@ class WikipediaDataSet(Dataset):
     def __len__(self):
         return len(self.textfiles)
 
-    def read_fin10k_file(self):
-        pass
-
     def read_wiki_file(self, path, n_context_sent=1, remove_preface_segment=True, high_granularity=True):
         all_sections = get_sections(path, high_granularity)
         required_sections = all_sections[1:] if remove_preface_segment and len(all_sections) > 0 else all_sections
@@ -201,3 +198,30 @@ class WikipediaDataSet(Dataset):
                 "targets": targets, 
                 "path": path}
 
+class Fin10KDataset(Dataset):
+    def __init__(self, file_path):
+
+        self.id = []
+        self.left_text = ["[PAD]"]
+        self.right_text = []
+        sent_flag = ""
+
+        # read files
+        with open(file_path, 'r') as f:
+            for line in f:
+                ids, sent_text = line.split('\t')
+                company_id, yr, item_id, para_id, sent_id = ids.split('_')
+                self.right_text.append(sent_text.strip())
+                self.left_text.append(sent_text.strip())
+                self.id.append(f'{company_id}_{yr}_{item_id}_{para_id}_{sent_id}')
+
+        # remove the last line of right context
+        self.left_text.pop(-1)
+
+    def __getitem__(self, index):
+        return {"left_context": self.left_text[index],
+                "right_context": self.right_text[index],
+                "sent_id": self.id[index]}
+
+    def __len__(self):
+        return len(self.id)

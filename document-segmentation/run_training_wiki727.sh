@@ -2,10 +2,11 @@ python3 train.py \
   --per_device_train_batch_size 4 \
   --per_device_eval_batch_size 4 \
   --negative_sampling 'hard_min' \
-  --save_steps 5000 \
-  --eval_steps 5000 \
+  --max_steps 100000 \
+  --save_steps 10000 \
+  --eval_steps 10000 \
+  --resume_from_checkpoint true \
   --instance_per_example 2 \
-  --remove_unused_columns False \
   --train_folder wiki_727/train \
   --eval_folder wiki_727/dev \
   --do_eval \

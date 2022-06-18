@@ -4,3 +4,6 @@ esnli/**/*.tsv
 esnli/**/*.jsonl
 esnli/**/*.json
 document-segmentation/wiki_727/*
+document-segmentation/models/
+document-segmentation/prediction/
+document-segmentation/wandb/
